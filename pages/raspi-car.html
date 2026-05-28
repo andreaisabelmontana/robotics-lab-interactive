@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Build the Pi Car — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="sensors.html">Sensors</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Autonomous</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 4 · <strong>Build the Raspberry Pi Car</strong></p>
+  <header class="page-head">
+    <h1>From Pi to autonomous car</h1>
+    <p class="sub">Click a GPIO pin to see what it does and what you'd typically wire there for the car project.</p>
+  </header>
+
+  <div class="lab split">
+    <div>
+      <div class="pi-board" id="pinoutBoard"></div>
+      <p style="text-align: center; color: var(--text-mute); font-size: 0.85rem; margin-top: 0.8rem;">Raspberry Pi 4 / 5 — 40-pin GPIO header</p>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Pin detail</h3>
+        <div id="pinDetail">
+          <p style="color: var(--text-dim)">Click any pin on the board.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Bill of materials</h3>
+        <ul style="font-size: 0.9rem; color: var(--text-dim);">
+          <li>1× Raspberry Pi (3B+, 4, or 5) + microSD with Raspberry Pi OS</li>
+          <li>1× L298N H-bridge motor driver</li>
+          <li>2× DC gear motors with wheels (1:48 ratio typical)</li>
+          <li>1× HC-SR04 ultrasonic sensor</li>
+          <li>1× SG90 servo (optional — for sweeping the ultrasonic)</li>
+          <li>1× 4×AA or 6V battery pack for motors</li>
+          <li>1× USB power bank for the Pi</li>
+          <li>Jumper wires, breadboard, chassis</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>Setup steps (Session 9–10)</h3>
+        <ol style="font-size: 0.9rem; color: var(--text-dim);">
+          <li>Flash Raspberry Pi OS Lite onto microSD.</li>
+          <li>SSH in. Enable GPIO library: <code>pip install RPi.GPIO</code>.</li>
+          <li>Connect L298N power inputs to battery pack (+/−).</li>
+          <li>Motor A &amp; B leads → OUT1-2, OUT3-4 on L298N.</li>
+          <li>L298N IN1-IN4 → 4 Pi GPIOs (direction).</li>
+          <li>L298N ENA, ENB → 2 Pi PWM-capable GPIOs (speed).</li>
+          <li>HC-SR04 VCC→5V, GND→GND, TRIG→GPIO, ECHO→GPIO via voltage divider.</li>
+          <li>Common ground between Pi and motor battery — critical.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem;">
+    <h2>Driving the motors (your first script)</h2>
+    <pre style="font-size: 0.85rem;">import RPi.GPIO as GPIO
+import time
+
+# Motor pins
+IN1, IN2, IN3, IN4 = 5, 6, 13, 19
+ENA, ENB = 12, 18
+
+GPIO.setmode(GPIO.BCM)
+for p in [IN1, IN2, IN3, IN4, ENA, ENB]:
+    GPIO.setup(p, GPIO.OUT)
+
+pwm_a = GPIO.PWM(ENA, 1000)   # 1 kHz
+pwm_b = GPIO.PWM(ENB, 1000)
+pwm_a.start(70); pwm_b.start(70)  # 70% duty
+
+def forward():
+    GPIO.output(IN1, True);  GPIO.output(IN2, False)
+    GPIO.output(IN3, True);  GPIO.output(IN4, False)
+
+def stop():
+    for p in (IN1, IN2, IN3, IN4): GPIO.output(p, False)
+
+forward(); time.sleep(2); stop()
+GPIO.cleanup()</pre>
+  </section>
+
+  <div class="callout">
+    <p>Once this works, move to the <strong><a href="autonomous.html">Autonomous Navigation</a></strong> simulator to see what code-driven obstacle avoidance looks like — exactly what you'll port to the car.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+// Pinout for Raspberry Pi (BCM mode) — physical pin order
+const pins = [
+  // [physical, label, type, description]
+  [1, '3.3V', 'power-3v3', '3.3V power rail. Max 50mA. Use for sensors and logic.'],
+  [2, '5V', 'power-5v', '5V power rail. Use for HC-SR04 VCC (the Pi inputs need a voltage divider on ECHO).'],
+  [3, 'GPIO 2 (SDA)', 'gpio', 'I²C data line. Used with sensors that talk over I²C.'],
+  [4, '5V', 'power-5v', '5V power rail.'],
+  [5, 'GPIO 3 (SCL)', 'gpio', 'I²C clock line.'],
+  [6, 'GND', 'gnd', 'Ground. Tie to motor battery GND too.'],
+  [7, 'GPIO 4', 'gpio', 'General GPIO. Good for sensor inputs.'],
+  [8, 'GPIO 14 (TXD)', 'gpio', 'UART transmit. Used for serial debug.'],
+  [9, 'GND', 'gnd', 'Ground.'],
+  [10, 'GPIO 15 (RXD)', 'gpio', 'UART receive.'],
+  [11, 'GPIO 17', 'gpio', 'General GPIO.'],
+  [12, 'GPIO 18 (PWM)', 'gpio', 'Hardware PWM channel — perfect for motor speed (L298N ENB).'],
+  [13, 'GPIO 27', 'gpio', 'General GPIO.'],
+  [14, 'GND', 'gnd', 'Ground.'],
+  [15, 'GPIO 22', 'gpio', 'General GPIO.'],
+  [16, 'GPIO 23', 'gpio', 'TYPICAL: HC-SR04 TRIG (output pulse).'],
+  [17, '3.3V', 'power-3v3', '3.3V power rail.'],
+  [18, 'GPIO 24', 'gpio', 'TYPICAL: HC-SR04 ECHO (input, via voltage divider).'],
+  [19, 'GPIO 10 (MOSI)', 'gpio', 'SPI MOSI.'],
+  [20, 'GND', 'gnd', 'Ground.'],
+  [21, 'GPIO 9 (MISO)', 'gpio', 'SPI MISO.'],
+  [22, 'GPIO 25', 'gpio', 'General GPIO.'],
+  [23, 'GPIO 11 (SCLK)', 'gpio', 'SPI clock.'],
+  [24, 'GPIO 8 (CE0)', 'gpio', 'SPI chip select 0.'],
+  [25, 'GND', 'gnd', 'Ground.'],
+  [26, 'GPIO 7 (CE1)', 'gpio', 'SPI chip select 1.'],
+  [27, 'GPIO 0 (ID)', 'gpio', 'EEPROM data — leave alone.'],
+  [28, 'GPIO 1 (ID)', 'gpio', 'EEPROM clock — leave alone.'],
+  [29, 'GPIO 5', 'gpio', 'TYPICAL: L298N IN1 (motor A direction).'],
+  [30, 'GND', 'gnd', 'Ground.'],
+  [31, 'GPIO 6', 'gpio', 'TYPICAL: L298N IN2 (motor A direction).'],
+  [32, 'GPIO 12 (PWM)', 'gpio', 'Hardware PWM — TYPICAL: L298N ENA (motor A speed).'],
+  [33, 'GPIO 13 (PWM)', 'gpio', 'TYPICAL: L298N IN3 (motor B direction).'],
+  [34, 'GND', 'gnd', 'Ground.'],
+  [35, 'GPIO 19 (PWM)', 'gpio', 'TYPICAL: L298N IN4 (motor B direction).'],
+  [36, 'GPIO 16', 'gpio', 'General GPIO. Good for servo PWM (software PWM).'],
+  [37, 'GPIO 26', 'gpio', 'General GPIO.'],
+  [38, 'GPIO 20', 'gpio', 'General GPIO.'],
+  [39, 'GND', 'gnd', 'Ground.'],
+  [40, 'GPIO 21', 'gpio', 'General GPIO.']
+];
+
+const board = document.getElementById('pinoutBoard');
+const detail = document.getElementById('pinDetail');
+
+for (let i = 0; i < 40; i += 2) {
+  // Left = odd-numbered pin (1, 3, ...)
+  // Right = even-numbered pin (2, 4, ...)
+  const left = pins[i];
+  const right = pins[i + 1];
+  const lDiv = makePin(left, false);
+  const rDiv = makePin(right, true);
+  board.appendChild(lDiv);
+  board.appendChild(rDiv);
+}
+
+function makePin([num, label, type, desc], isRight) {
+  const div = document.createElement('div');
+  div.className = `pin ${type}${isRight ? ' right' : ''}`;
+  div.innerHTML = `<span class="num">${num}</span><span class="lbl">${label}</span>`;
+  div.dataset.num = num;
+  div.dataset.desc = desc;
+  div.dataset.label = label;
+  div.dataset.type = type;
+  div.addEventListener('click', () => {
+    document.querySelectorAll('.pin').forEach(p => p.classList.remove('selected'));
+    div.classList.add('selected');
+    const typeNames = {
+      'power-5v': '5V Power',
+      'power-3v3': '3.3V Power',
+      'gnd': 'Ground',
+      'gpio': 'GPIO (General Purpose I/O)'
+    };
+    detail.innerHTML = `
+      <div><span class="tag">PHYS PIN ${num}</span> <span class="tag">${typeNames[type]}</span></div>
+      <h3 style="margin-top: 0.6rem">${label}</h3>
+      <p style="color: var(--text-dim)">${desc}</p>
+    `;
+  });
+  return div;
+}
+</script>
+</body>
+</html>

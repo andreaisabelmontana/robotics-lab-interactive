@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sensors — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 2 · <strong>Sensors</strong></p>
+  <header class="page-head">
+    <h1>Sensors: how robots perceive</h1>
+    <p class="sub">Each sensor below is a live simulation of a real component you'll use in this course. Drag, click, and watch the readings change.</p>
+  </header>
+
+  <!-- ULTRASONIC -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent)">📡</span> HC-SR04 Ultrasonic Distance Sensor</h2>
+    <p style="color: var(--text-dim)">Emits a 40 kHz pulse, measures echo time. <code>distance = (echo_time × 343 m/s) / 2</code>. <strong>Drag the obstacle</strong> to change distance.</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="usCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Reading</h3>
+          <div class="readouts">
+            <div><span class="k">Distance</span><span class="v" id="usDist">— cm</span></div>
+            <div><span class="k">Echo time</span><span class="v" id="usEcho">— µs</span></div>
+            <div><span class="k">Status</span><span class="v" id="usStatus">—</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Wiring (your Pi car)</h3>
+          <pre style="font-size: 0.8rem;">VCC  → 5V
+GND  → GND
+TRIG → GPIO 23
+ECHO → GPIO 24 (via voltage divider)</pre>
+        </div>
+        <div class="panel">
+          <h3>Python snippet</h3>
+          <pre style="font-size: 0.75rem;">import RPi.GPIO as GPIO, time
+GPIO.output(TRIG, True)
+time.sleep(0.00001)
+GPIO.output(TRIG, False)
+while GPIO.input(ECHO)==0: t0=time.time()
+while GPIO.input(ECHO)==1: t1=time.time()
+dist_cm = (t1-t0) * 17150</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IR LINE FOLLOWER -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent-2)">🔴</span> IR Line-Follower Array</h2>
+    <p style="color: var(--text-dim)">3 downward-facing IR sensors detect black vs. white. <strong>Drag the line</strong> to see how the array reports its position.</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="irCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Sensor outputs</h3>
+          <div class="readouts">
+            <div><span class="k">Left</span><span class="v" id="irL">—</span></div>
+            <div><span class="k">Center</span><span class="v" id="irC">—</span></div>
+            <div><span class="k">Right</span><span class="v" id="irR">—</span></div>
+            <div><span class="k">Decision</span><span class="v" id="irDec">—</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Decision rule</h3>
+          <pre style="font-size: 0.8rem;">if center: go straight
+elif left:  turn left
+elif right: turn right
+else:       stop / search</pre>
+          <p style="color: var(--text-dim); font-size: 0.85rem;">A real line-follower extends this with a PID on the <em>error</em> between the line center and the sensor midpoint.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ENCODER -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent-3)">🔄</span> Rotary Encoder</h2>
+    <p style="color: var(--text-dim)">A slotted disc + photo-interrupter counts ticks as the wheel turns. <strong>Click "Spin"</strong> or use the speed slider.</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="encCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Controls</h3>
+          <div class="control">
+            <label>Wheel speed</label>
+            <input type="range" id="encSpeed" min="-200" max="200" value="60">
+            <span class="val" id="encSpeedVal">60</span>
+          </div>
+          <div class="btn-row">
+            <button class="btn-sm" id="encStop">Stop</button>
+            <button class="btn-sm" id="encReset">Reset ticks</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Reading</h3>
+          <div class="readouts">
+            <div><span class="k">Ticks (total)</span><span class="v" id="encTicks">0</span></div>
+            <div><span class="k">Revolutions</span><span class="v" id="encRev">0.00</span></div>
+            <div><span class="k">RPM (estimate)</span><span class="v" id="encRpm">0</span></div>
+            <div><span class="k">Distance @ r=3cm</span><span class="v" id="encDist">0.0 cm</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <p><strong>Sensor fusion preview —</strong> Real robots combine multiple sensors because each one is noisy or limited. Your Pi car will use the <em>ultrasonic</em> to detect obstacles, but it could add <em>IR</em> to follow a line and <em>encoders</em> to know how far it has traveled. A Kalman filter combines all three into one clean estimate of the robot's state.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+// ============ ULTRASONIC ============
+(() => {
+  const cv = document.getElementById('usCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let obstacleX = 400;
+  let dragging = false;
+
+  function draw() {
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // grid
+    ctx.strokeStyle = '#1a2138';
+    for (let x = 0; x < W; x += 30) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    // sensor body
+    const sensorX = 80, sensorY = H / 2;
+    ctx.fillStyle = '#1f2937';
+    ctx.fillRect(sensorX - 25, sensorY - 30, 50, 60);
+    ctx.fillStyle = '#00e5ff';
+    ctx.beginPath(); ctx.arc(sensorX, sensorY - 12, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sensorX, sensorY + 12, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px ui-monospace';
+    ctx.fillText('T', sensorX - 3, sensorY - 9);
+    ctx.fillText('R', sensorX - 3, sensorY + 15);
+
+    // ultrasonic waves (animated)
+    const pulse = (Date.now() % 1500) / 1500;
+    const distPx = obstacleX - sensorX - 25;
+    const cm = (distPx * 0.5).toFixed(1);
+    for (let i = 0; i < 3; i++) {
+      const r = (pulse + i * 0.33) % 1;
+      ctx.strokeStyle = `rgba(0,229,255,${0.4 * (1 - r)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(sensorX + 25, sensorY - 12, r * distPx, -Math.PI / 6, Math.PI / 6);
+      ctx.stroke();
+    }
+
+    // obstacle
+    ctx.fillStyle = '#7c4dff';
+    ctx.fillRect(obstacleX, sensorY - 80, 60, 160);
+    ctx.fillStyle = '#fff';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('drag', obstacleX + 18, sensorY - 90);
+
+    // distance line + label
+    ctx.strokeStyle = '#fbbf24';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(sensorX + 25, sensorY + 50);
+    ctx.lineTo(obstacleX, sensorY + 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '14px ui-monospace';
+    ctx.fillText(`${cm} cm`, (sensorX + obstacleX) / 2 - 25, sensorY + 70);
+
+    // readouts
+    document.getElementById('usDist').textContent = `${cm} cm`;
+    document.getElementById('usEcho').textContent = `${(cm * 58.3).toFixed(0)} µs`;
+    let status = 'CLEAR';
+    let color = '#4ade80';
+    if (cm < 10) { status = 'TOO CLOSE — STOP'; color = '#f87171'; }
+    else if (cm < 25) { status = 'OBSTACLE — TURN'; color = '#fbbf24'; }
+    document.getElementById('usStatus').textContent = status;
+    document.getElementById('usStatus').style.color = color;
+
+    requestAnimationFrame(draw);
+  }
+
+  const getMx = e => {
+    const r = cv.getBoundingClientRect();
+    return ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) * (W / r.width);
+  };
+  cv.addEventListener('mousedown', e => {
+    const x = getMx(e);
+    if (Math.abs(x - obstacleX) < 60) dragging = true;
+  });
+  cv.addEventListener('mousemove', e => {
+    if (dragging) obstacleX = Math.max(120, Math.min(W - 80, getMx(e)));
+  });
+  window.addEventListener('mouseup', () => dragging = false);
+  cv.addEventListener('touchstart', e => { dragging = true; obstacleX = Math.max(120, Math.min(W - 80, getMx(e))); e.preventDefault(); }, { passive: false });
+  cv.addEventListener('touchmove', e => { if (dragging) obstacleX = Math.max(120, Math.min(W - 80, getMx(e))); e.preventDefault(); }, { passive: false });
+  window.addEventListener('touchend', () => dragging = false);
+  draw();
+})();
+
+// ============ IR LINE FOLLOWER ============
+(() => {
+  const cv = document.getElementById('irCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let lineX = W / 2;
+  let dragging = false;
+
+  function draw() {
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fillRect(0, 0, W, H);
+
+    // black line
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(lineX - 18, 0, 36, H);
+
+    // sensor housing
+    const cy = H / 2;
+    ctx.fillStyle = '#1f2937';
+    ctx.fillRect(W / 2 - 100, cy - 30, 200, 60);
+    ctx.fillStyle = '#9aa4bf';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('IR ARRAY (3-channel)', W / 2 - 60, cy - 35);
+
+    const sensorPositions = [W / 2 - 60, W / 2, W / 2 + 60];
+    const readings = sensorPositions.map(sx => {
+      const onLine = Math.abs(sx - lineX) < 18;
+      return onLine ? 1 : 0;
+    });
+
+    sensorPositions.forEach((sx, i) => {
+      ctx.fillStyle = readings[i] ? '#f87171' : '#4ade80';
+      ctx.beginPath(); ctx.arc(sx, cy, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 12px ui-monospace';
+      ctx.fillText(readings[i] ? 'LINE' : 'OK', sx - 14, cy + 4);
+    });
+
+    document.getElementById('irL').textContent = readings[0] ? '1 (line)' : '0 (white)';
+    document.getElementById('irC').textContent = readings[1] ? '1 (line)' : '0 (white)';
+    document.getElementById('irR').textContent = readings[2] ? '1 (line)' : '0 (white)';
+
+    let dec;
+    if (readings[1]) dec = 'GO STRAIGHT';
+    else if (readings[0] && !readings[2]) dec = 'TURN LEFT';
+    else if (readings[2] && !readings[0]) dec = 'TURN RIGHT';
+    else if (readings[0] && readings[2]) dec = 'INTERSECTION';
+    else dec = 'LOST — SEARCH';
+    document.getElementById('irDec').textContent = dec;
+
+    // hint
+    ctx.fillStyle = '#0a0e1a';
+    ctx.font = '13px ui-monospace';
+    ctx.fillText('← drag the line →', lineX - 60, H - 20);
+
+    requestAnimationFrame(draw);
+  }
+
+  const getMx = e => {
+    const r = cv.getBoundingClientRect();
+    return ((e.touches ? e.touches[0].clientX : e.clientX) - r.left) * (W / r.width);
+  };
+  cv.addEventListener('mousedown', e => { dragging = true; lineX = getMx(e); });
+  cv.addEventListener('mousemove', e => { if (dragging) lineX = Math.max(20, Math.min(W - 20, getMx(e))); });
+  window.addEventListener('mouseup', () => dragging = false);
+  cv.addEventListener('touchstart', e => { dragging = true; lineX = getMx(e); e.preventDefault(); }, { passive: false });
+  cv.addEventListener('touchmove', e => { if (dragging) lineX = Math.max(20, Math.min(W - 20, getMx(e))); e.preventDefault(); }, { passive: false });
+  window.addEventListener('touchend', () => dragging = false);
+  draw();
+})();
+
+// ============ ENCODER ============
+(() => {
+  const cv = document.getElementById('encCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let angle = 0;
+  let speed = 60;       // deg/s
+  let ticks = 0;
+  let lastSlot = 0;
+  const SLOTS = 20;     // typical
+  let lastT = performance.now();
+
+  document.getElementById('encSpeed').addEventListener('input', e => {
+    speed = +e.target.value;
+    document.getElementById('encSpeedVal').textContent = speed;
+  });
+  document.getElementById('encStop').addEventListener('click', () => {
+    speed = 0;
+    document.getElementById('encSpeed').value = 0;
+    document.getElementById('encSpeedVal').textContent = 0;
+  });
+  document.getElementById('encReset').addEventListener('click', () => {
+    ticks = 0; angle = 0; lastSlot = 0;
+  });
+
+  function draw() {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    lastT = now;
+    angle = (angle + speed * dt) % 360;
+    if (angle < 0) angle += 360;
+
+    // detect new tick by slot crossings
+    const slot = Math.floor(angle / (360 / SLOTS));
+    if (slot !== lastSlot) {
+      const diff = (slot - lastSlot + SLOTS) % SLOTS;
+      ticks += diff * (speed >= 0 ? 1 : -1);
+      lastSlot = slot;
+    }
+
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // disc
+    const cx = W / 2, cy = H / 2, R = 110;
+    ctx.fillStyle = '#1f2937';
+    ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#374151';
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+
+    // slots
+    for (let i = 0; i < SLOTS; i++) {
+      const a = (i / SLOTS) * Math.PI * 2 + angle * Math.PI / 180;
+      const x1 = cx + Math.cos(a) * (R - 5);
+      const y1 = cy + Math.sin(a) * (R - 5);
+      const x2 = cx + Math.cos(a) * (R - 30);
+      const y2 = cy + Math.sin(a) * (R - 30);
+      ctx.strokeStyle = '#0a0e1a';
+      ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+
+    // hub
+    ctx.fillStyle = '#7c4dff';
+    ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2); ctx.fill();
+
+    // photo-interrupter (right side)
+    const pX = cx + R + 30;
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(pX, cy - 35, 8, 70);
+    ctx.fillStyle = '#1f2937';
+    ctx.fillRect(pX + 8, cy - 5, 6, 10);
+    // beam
+    const onSlot = Math.abs(angle % (360 / SLOTS) - (180 / SLOTS)) < 8;
+    ctx.strokeStyle = onSlot ? '#00e5ff' : 'rgba(0,229,255,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pX, cy); ctx.lineTo(pX - 30, cy);
+    ctx.stroke();
+
+    // direction arrow
+    ctx.fillStyle = '#9aa4bf';
+    ctx.font = '12px ui-monospace';
+    ctx.fillText(speed === 0 ? 'STOPPED' : speed > 0 ? '↻ forward' : '↺ reverse', 30, 30);
+
+    // readouts
+    document.getElementById('encTicks').textContent = ticks;
+    document.getElementById('encRev').textContent = (ticks / SLOTS).toFixed(2);
+    const rpm = (speed / 360) * 60;
+    document.getElementById('encRpm').textContent = rpm.toFixed(1);
+    const distCm = (ticks / SLOTS) * (2 * Math.PI * 3);
+    document.getElementById('encDist').textContent = `${distCm.toFixed(1)} cm`;
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>

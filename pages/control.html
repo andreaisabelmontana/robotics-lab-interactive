@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Control Systems &amp; PID — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="sensors.html">Sensors</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 2 · <strong>Control Systems</strong></p>
+  <header class="page-head">
+    <h1>PID Control — tune it live</h1>
+    <p class="sub">A cart on a track wants to reach a setpoint. Tune the Proportional, Integral, and Derivative gains until it lands smoothly. Click the track to move the setpoint.</p>
+  </header>
+
+  <div class="lab split">
+    <div>
+      <div class="viz" style="min-height: 200px;">
+        <canvas id="cartCanvas" width="700" height="200"></canvas>
+      </div>
+      <div class="viz" style="min-height: 280px; margin-top: 1rem;">
+        <canvas id="plotCanvas" width="700" height="280"></canvas>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>PID gains</h3>
+        <div class="control">
+          <label>Kp</label>
+          <input type="range" id="Kp" min="0" max="50" step="0.5" value="8">
+          <span class="val" id="KpVal">8.0</span>
+        </div>
+        <div class="control">
+          <label>Ki</label>
+          <input type="range" id="Ki" min="0" max="20" step="0.1" value="0.5">
+          <span class="val" id="KiVal">0.5</span>
+        </div>
+        <div class="control">
+          <label>Kd</label>
+          <input type="range" id="Kd" min="0" max="20" step="0.1" value="2.0">
+          <span class="val" id="KdVal">2.0</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn-sm" data-preset="off">P only</button>
+          <button class="btn-sm" data-preset="pi">PI</button>
+          <button class="btn-sm active" data-preset="pid">PID (good)</button>
+          <button class="btn-sm" data-preset="over">Over-tuned</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Plant disturbance</h3>
+        <div class="control">
+          <label>Mass</label>
+          <input type="range" id="mass" min="0.2" max="5" step="0.1" value="1.0">
+          <span class="val" id="massVal">1.0</span>
+        </div>
+        <div class="control">
+          <label>Friction</label>
+          <input type="range" id="fric" min="0" max="3" step="0.1" value="0.5">
+          <span class="val" id="fricVal">0.5</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn-sm" id="kickBtn">⚡ Kick the cart</button>
+          <button class="btn-sm" id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Live state</h3>
+        <div class="readouts">
+          <div><span class="k">Setpoint</span><span class="v" id="setVal">300</span></div>
+          <div><span class="k">Position</span><span class="v" id="posVal">—</span></div>
+          <div><span class="k">Error</span><span class="v" id="errVal">—</span></div>
+          <div><span class="k">P term</span><span class="v" id="pTermVal">—</span></div>
+          <div><span class="k">I term</span><span class="v" id="iTermVal">—</span></div>
+          <div><span class="k">D term</span><span class="v" id="dTermVal">—</span></div>
+          <div><span class="k">Total force</span><span class="v" id="uVal">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>What each term does</h2>
+    <div class="grid">
+      <div>
+        <h3 style="color: var(--accent)">P — Proportional</h3>
+        <p style="color: var(--text-dim)">Force ∝ <em>current</em> error. Pull harder when far away. <strong>High Kp</strong> → fast response but overshoot &amp; oscillation. <strong>Low Kp</strong> → slow, often steady-state error.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-2)">I — Integral</h3>
+        <p style="color: var(--text-dim)">Force ∝ <em>accumulated</em> error over time. Kills steady-state offset (e.g. friction holding the cart back). Too much Ki → wind-up &amp; slow oscillation.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-3)">D — Derivative</h3>
+        <p style="color: var(--text-dim)">Force ∝ <em>rate of change</em> of error. Acts like a brake when approaching the target. Damps overshoot &amp; oscillation, but amplifies sensor noise.</p>
+      </div>
+    </div>
+    <pre style="margin-top: 1rem;">u(t) = Kp·e(t) + Ki·∫e dt + Kd·(de/dt)
+e(t) = setpoint − position</pre>
+  </section>
+
+  <div class="callout">
+    <p><strong>Tuning hint —</strong> Start with Kp only (set Ki = Kd = 0). Increase Kp until you see oscillation, then back off ~30%. Add Kd to damp the oscillation. Add a little Ki last to eliminate any remaining offset. This is the classic Ziegler-Nichols heuristic.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+const cartCv = document.getElementById('cartCanvas');
+const cartCtx = cartCv.getContext('2d');
+const plotCv = document.getElementById('plotCanvas');
+const plotCtx = plotCv.getContext('2d');
+const CW = cartCv.width, CH = cartCv.height;
+const PW = plotCv.width, PH = plotCv.height;
+
+let pos = 100, vel = 0;
+let setpoint = 400;
+let integral = 0, prevErr = 0;
+let history = [];     // {t, pos, set, p, i, d}
+let lastT = performance.now();
+let startT = lastT;
+
+const $ = id => document.getElementById(id);
+
+function applyPreset(name) {
+  const p = {
+    off: [8, 0, 0],
+    pi: [6, 4, 0],
+    pid: [8, 0.5, 2],
+    over: [40, 10, 0.2]
+  }[name];
+  $('Kp').value = p[0]; $('KpVal').textContent = p[0].toFixed(1);
+  $('Ki').value = p[1]; $('KiVal').textContent = p[1].toFixed(1);
+  $('Kd').value = p[2]; $('KdVal').textContent = p[2].toFixed(1);
+  integral = 0; history = [];
+}
+
+document.querySelectorAll('[data-preset]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-preset]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    applyPreset(b.dataset.preset);
+  });
+});
+
+['Kp', 'Ki', 'Kd', 'mass', 'fric'].forEach(id => {
+  $(id).addEventListener('input', e => {
+    $(id + 'Val').textContent = (+e.target.value).toFixed(1);
+  });
+});
+
+$('kickBtn').addEventListener('click', () => { vel += 120 * (Math.random() > 0.5 ? 1 : -1); });
+$('resetBtn').addEventListener('click', () => {
+  pos = 100; vel = 0; setpoint = 400; integral = 0; prevErr = 0; history = []; startT = performance.now();
+});
+
+cartCv.addEventListener('click', e => {
+  const r = cartCv.getBoundingClientRect();
+  setpoint = (e.clientX - r.left) * (CW / r.width);
+  setpoint = Math.max(40, Math.min(CW - 40, setpoint));
+});
+
+function simulate(dt) {
+  const Kp = +$('Kp').value, Ki = +$('Ki').value, Kd = +$('Kd').value;
+  const mass = +$('mass').value, fric = +$('fric').value;
+
+  const err = setpoint - pos;
+  integral += err * dt;
+  integral = Math.max(-500, Math.min(500, integral));      // anti-windup
+  const deriv = (err - prevErr) / Math.max(dt, 0.001);
+  prevErr = err;
+
+  const P = Kp * err;
+  const I = Ki * integral;
+  const D = Kd * deriv;
+  const u = P + I + D;
+  const accel = (u - fric * vel) / mass;
+  vel += accel * dt;
+  pos += vel * dt;
+
+  // walls (simple)
+  if (pos < 30) { pos = 30; vel = Math.max(0, vel); }
+  if (pos > CW - 30) { pos = CW - 30; vel = Math.min(0, vel); }
+
+  return { err, P, I, D, u };
+}
+
+function drawCart() {
+  cartCtx.fillStyle = '#0a0e1a';
+  cartCtx.fillRect(0, 0, CW, CH);
+
+  // track
+  cartCtx.fillStyle = '#1f2937';
+  cartCtx.fillRect(0, CH - 50, CW, 4);
+  for (let x = 0; x < CW; x += 50) {
+    cartCtx.fillStyle = '#374151';
+    cartCtx.fillRect(x, CH - 50, 2, 8);
+    cartCtx.fillStyle = '#6b7595';
+    cartCtx.font = '10px ui-monospace';
+    cartCtx.fillText(x, x - 8, CH - 36);
+  }
+
+  // setpoint
+  cartCtx.strokeStyle = '#fbbf24';
+  cartCtx.lineWidth = 2;
+  cartCtx.setLineDash([4, 4]);
+  cartCtx.beginPath();
+  cartCtx.moveTo(setpoint, 20);
+  cartCtx.lineTo(setpoint, CH - 30);
+  cartCtx.stroke();
+  cartCtx.setLineDash([]);
+  cartCtx.fillStyle = '#fbbf24';
+  cartCtx.font = 'bold 11px ui-monospace';
+  cartCtx.fillText('SET', setpoint - 10, 14);
+
+  // cart
+  const cartY = CH - 75;
+  cartCtx.fillStyle = '#00e5ff';
+  cartCtx.fillRect(pos - 25, cartY, 50, 25);
+  // wheels
+  cartCtx.fillStyle = '#7c4dff';
+  cartCtx.beginPath(); cartCtx.arc(pos - 15, cartY + 25, 6, 0, Math.PI * 2); cartCtx.fill();
+  cartCtx.beginPath(); cartCtx.arc(pos + 15, cartY + 25, 6, 0, Math.PI * 2); cartCtx.fill();
+
+  // velocity arrow
+  if (Math.abs(vel) > 5) {
+    cartCtx.strokeStyle = '#ff4d8d';
+    cartCtx.lineWidth = 2;
+    cartCtx.beginPath();
+    cartCtx.moveTo(pos, cartY + 12);
+    cartCtx.lineTo(pos + vel * 0.2, cartY + 12);
+    cartCtx.stroke();
+  }
+
+  cartCtx.fillStyle = '#9aa4bf';
+  cartCtx.font = '11px ui-monospace';
+  cartCtx.fillText('click track to move setpoint', 10, 20);
+}
+
+function drawPlot() {
+  plotCtx.fillStyle = '#0a0e1a';
+  plotCtx.fillRect(0, 0, PW, PH);
+
+  // grid
+  plotCtx.strokeStyle = '#1a2138';
+  for (let y = 0; y < PH; y += 35) {
+    plotCtx.beginPath(); plotCtx.moveTo(0, y); plotCtx.lineTo(PW, y); plotCtx.stroke();
+  }
+  for (let x = 0; x < PW; x += 60) {
+    plotCtx.beginPath(); plotCtx.moveTo(x, 0); plotCtx.lineTo(x, PH); plotCtx.stroke();
+  }
+
+  if (history.length < 2) return;
+
+  const t0 = history[0].t;
+  const t1 = history[history.length - 1].t;
+  const span = Math.max(8, t1 - t0);
+
+  const xOf = t => (t - t0) / span * PW;
+  const yOf = v => PH - (v / CW) * (PH - 20) - 10;
+
+  // setpoint
+  plotCtx.strokeStyle = '#fbbf24';
+  plotCtx.lineWidth = 2;
+  plotCtx.setLineDash([4, 4]);
+  plotCtx.beginPath();
+  history.forEach((h, i) => {
+    const x = xOf(h.t), y = yOf(h.set);
+    i ? plotCtx.lineTo(x, y) : plotCtx.moveTo(x, y);
+  });
+  plotCtx.stroke();
+  plotCtx.setLineDash([]);
+
+  // position
+  plotCtx.strokeStyle = '#00e5ff';
+  plotCtx.lineWidth = 2;
+  plotCtx.beginPath();
+  history.forEach((h, i) => {
+    const x = xOf(h.t), y = yOf(h.pos);
+    i ? plotCtx.lineTo(x, y) : plotCtx.moveTo(x, y);
+  });
+  plotCtx.stroke();
+
+  // legend
+  plotCtx.fillStyle = '#9aa4bf';
+  plotCtx.font = '11px ui-monospace';
+  plotCtx.fillText('position', 10, 16);
+  plotCtx.fillStyle = '#00e5ff';
+  plotCtx.fillRect(70, 8, 20, 3);
+  plotCtx.fillStyle = '#fbbf24';
+  plotCtx.fillRect(100, 8, 20, 3);
+  plotCtx.fillStyle = '#9aa4bf';
+  plotCtx.fillText('setpoint', 130, 16);
+  plotCtx.fillText('time →', PW - 60, PH - 6);
+}
+
+function loop() {
+  const now = performance.now();
+  let dt = (now - lastT) / 1000;
+  lastT = now;
+  if (dt > 0.1) dt = 0.1;
+
+  const s = simulate(dt);
+
+  history.push({
+    t: (now - startT) / 1000,
+    pos, set: setpoint,
+    p: s.P, i: s.I, d: s.D
+  });
+  if (history.length > 600) history.shift();
+
+  drawCart();
+  drawPlot();
+
+  $('setVal').textContent = setpoint.toFixed(0);
+  $('posVal').textContent = pos.toFixed(1);
+  $('errVal').textContent = s.err.toFixed(1);
+  $('pTermVal').textContent = s.P.toFixed(1);
+  $('iTermVal').textContent = s.I.toFixed(1);
+  $('dTermVal').textContent = s.D.toFixed(1);
+  $('uVal').textContent = s.u.toFixed(1);
+
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>

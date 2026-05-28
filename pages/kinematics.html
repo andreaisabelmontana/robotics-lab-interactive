@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Robot Kinematics — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="sensors.html">Sensors</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 1 · <strong>Robot Kinematics</strong></p>
+  <header class="page-head">
+    <h1>2-Link Planar Manipulator</h1>
+    <p class="sub">Move the joints (forward kinematics) or drag the end-effector (inverse kinematics). The red circle shows the workspace — the set of all reachable points.</p>
+  </header>
+
+  <div class="lab split">
+    <div class="viz" style="min-height: 480px;">
+      <canvas id="armCanvas" width="640" height="480"></canvas>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Mode</h3>
+        <div class="btn-row">
+          <button class="btn-sm active" data-mode="fk">Forward Kinematics</button>
+          <button class="btn-sm" data-mode="ik">Inverse Kinematics</button>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 0.8rem;">
+          <strong>FK:</strong> set joint angles → compute hand position. <br>
+          <strong>IK:</strong> drag the hand → compute joint angles.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3>Joint angles</h3>
+        <div class="control">
+          <label>θ₁ (shoulder)</label>
+          <input type="range" id="theta1" min="-180" max="180" step="1" value="45">
+          <span class="val" id="theta1Val">45°</span>
+        </div>
+        <div class="control">
+          <label>θ₂ (elbow)</label>
+          <input type="range" id="theta2" min="-180" max="180" step="1" value="-60">
+          <span class="val" id="theta2Val">-60°</span>
+        </div>
+        <h3 style="margin-top: 1rem">Link lengths</h3>
+        <div class="control">
+          <label>L₁</label>
+          <input type="range" id="L1" min="40" max="160" step="1" value="120">
+          <span class="val" id="L1Val">120</span>
+        </div>
+        <div class="control">
+          <label>L₂</label>
+          <input type="range" id="L2" min="40" max="160" step="1" value="100">
+          <span class="val" id="L2Val">100</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Live state</h3>
+        <div class="readouts">
+          <div><span class="k">End-effector X</span><span class="v" id="exVal">—</span></div>
+          <div><span class="k">End-effector Y</span><span class="v" id="eyVal">—</span></div>
+          <div><span class="k">Elbow X</span><span class="v" id="elxVal">—</span></div>
+          <div><span class="k">Elbow Y</span><span class="v" id="elyVal">—</span></div>
+          <div><span class="k">Reach (min)</span><span class="v" id="reachMin">—</span></div>
+          <div><span class="k">Reach (max)</span><span class="v" id="reachMax">—</span></div>
+          <div><span class="k">IK solution</span><span class="v" id="ikStatus">—</span></div>
+        </div>
+        <div class="btn-row" style="margin-top: 0.8rem;">
+          <button class="btn-sm" id="solnToggle">Switch elbow up/down</button>
+          <button class="btn-sm" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>The math behind the picture</h2>
+    <h3 style="margin-top: 1rem; color: var(--accent)">Forward Kinematics — easy</h3>
+    <p>Given joint angles θ₁ and θ₂ and link lengths L₁ and L₂, the end-effector position is:</p>
+    <pre>x = L₁·cos(θ₁) + L₂·cos(θ₁ + θ₂)
+y = L₁·sin(θ₁) + L₂·sin(θ₁ + θ₂)</pre>
+    <p>Just trigonometry. This is the function used in FK mode above — every joint change directly computes the hand position.</p>
+
+    <h3 style="margin-top: 1.5rem; color: var(--accent-2)">Inverse Kinematics — harder</h3>
+    <p>Given a target point (x, y), find joint angles. For a 2-link planar arm there's a clean closed-form solution:</p>
+    <pre>r² = x² + y²
+cos(θ₂) = (r² − L₁² − L₂²) / (2·L₁·L₂)
+θ₂ = ±acos(cos(θ₂))              ← two solutions: elbow up / elbow down
+θ₁ = atan2(y,x) − atan2(L₂·sin(θ₂), L₁ + L₂·cos(θ₂))</pre>
+    <p>The <strong>±</strong> in θ₂ gives you the two valid arm configurations. Click "Switch elbow up/down" above to flip between them.</p>
+
+    <div class="callout">
+      <p><strong>Unreachable targets:</strong> if r &gt; L₁ + L₂ (too far) or r &lt; |L₁ − L₂| (too close), there's no real solution — <code>cos(θ₂)</code> would be outside [−1, 1]. Try dragging the hand far outside the workspace and watch the status flip to <em>UNREACHABLE</em>.</p>
+    </div>
+
+    <h3 style="margin-top: 1.5rem; color: var(--accent-3)">Degrees of Freedom (DOF)</h3>
+    <p>This arm has <strong>2 DOF</strong> (two independent joint angles), and it operates in a <strong>2D workspace</strong> (x, y) — a perfect 2-to-2 match. The Pepper robot has <strong>17 DOF</strong>. A typical industrial 6-axis arm has <strong>6 DOF</strong> to fully position and orient a tool in 3D space (3 for position, 3 for orientation).</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+const cv = document.getElementById('armCanvas');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const ORIGIN = { x: W * 0.4, y: H * 0.7 };
+
+let mode = 'fk';
+let theta1 = 45 * Math.PI / 180;
+let theta2 = -60 * Math.PI / 180;
+let L1 = 120, L2 = 100;
+let target = null;          // for IK
+let elbowSolution = 1;       // +1 or -1
+let dragging = false;
+let ikUnreachable = false;
+
+const $ = id => document.getElementById(id);
+
+function setSliders(t1, t2) {
+  $('theta1').value = Math.round(t1 * 180 / Math.PI);
+  $('theta2').value = Math.round(t2 * 180 / Math.PI);
+  $('theta1Val').textContent = Math.round(t1 * 180 / Math.PI) + '°';
+  $('theta2Val').textContent = Math.round(t2 * 180 / Math.PI) + '°';
+}
+
+function computeFK() {
+  const ex = ORIGIN.x + L1 * Math.cos(theta1) + L2 * Math.cos(theta1 + theta2);
+  const ey = ORIGIN.y - (L1 * Math.sin(theta1) + L2 * Math.sin(theta1 + theta2));
+  const elx = ORIGIN.x + L1 * Math.cos(theta1);
+  const ely = ORIGIN.y - L1 * Math.sin(theta1);
+  return { ex, ey, elx, ely };
+}
+
+function solveIK(tx, ty) {
+  // target relative to origin, with y inverted (screen → math)
+  const x = tx - ORIGIN.x;
+  const y = ORIGIN.y - ty;
+  const r2 = x * x + y * y;
+  const r = Math.sqrt(r2);
+  const minR = Math.abs(L1 - L2);
+  const maxR = L1 + L2;
+  if (r > maxR || r < minR) {
+    ikUnreachable = true;
+    return false;
+  }
+  ikUnreachable = false;
+  let c2 = (r2 - L1 * L1 - L2 * L2) / (2 * L1 * L2);
+  c2 = Math.max(-1, Math.min(1, c2));
+  const s2 = elbowSolution * Math.sqrt(1 - c2 * c2);
+  const newT2 = Math.atan2(s2, c2);
+  const newT1 = Math.atan2(y, x) - Math.atan2(L2 * s2, L1 + L2 * c2);
+  theta1 = newT1;
+  theta2 = newT2;
+  setSliders(theta1, theta2);
+  return true;
+}
+
+function draw() {
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, W, H);
+
+  // grid
+  ctx.strokeStyle = '#1a2138';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 40) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // axes through origin
+  ctx.strokeStyle = '#2a3550';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, ORIGIN.y); ctx.lineTo(W, ORIGIN.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ORIGIN.x, 0); ctx.lineTo(ORIGIN.x, H); ctx.stroke();
+
+  // workspace annulus
+  ctx.strokeStyle = 'rgba(255, 77, 141, 0.5)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.arc(ORIGIN.x, ORIGIN.y, L1 + L2, 0, Math.PI * 2); ctx.stroke();
+  if (Math.abs(L1 - L2) > 0) {
+    ctx.beginPath(); ctx.arc(ORIGIN.x, ORIGIN.y, Math.abs(L1 - L2), 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255, 77, 141, 0.6)';
+  ctx.font = '11px ui-monospace';
+  ctx.fillText('workspace', ORIGIN.x + L1 + L2 + 6, ORIGIN.y - 4);
+
+  // compute arm
+  const fk = computeFK();
+
+  // shadow links
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.15)';
+  ctx.lineWidth = 12;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(ORIGIN.x, ORIGIN.y); ctx.lineTo(fk.elx, fk.ely); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(fk.elx, fk.ely); ctx.lineTo(fk.ex, fk.ey); ctx.stroke();
+
+  // link 1
+  const grad1 = ctx.createLinearGradient(ORIGIN.x, ORIGIN.y, fk.elx, fk.ely);
+  grad1.addColorStop(0, '#00e5ff');
+  grad1.addColorStop(1, '#7c4dff');
+  ctx.strokeStyle = grad1;
+  ctx.lineWidth = 8;
+  ctx.beginPath(); ctx.moveTo(ORIGIN.x, ORIGIN.y); ctx.lineTo(fk.elx, fk.ely); ctx.stroke();
+
+  // link 2
+  const grad2 = ctx.createLinearGradient(fk.elx, fk.ely, fk.ex, fk.ey);
+  grad2.addColorStop(0, '#7c4dff');
+  grad2.addColorStop(1, '#ff4d8d');
+  ctx.strokeStyle = grad2;
+  ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(fk.elx, fk.ely); ctx.lineTo(fk.ex, fk.ey); ctx.stroke();
+
+  // joints
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(ORIGIN.x, ORIGIN.y, 10, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#7c4dff';
+  ctx.beginPath(); ctx.arc(fk.elx, fk.ely, 8, 0, Math.PI * 2); ctx.fill();
+
+  // end-effector
+  ctx.fillStyle = ikUnreachable ? '#f87171' : '#ff4d8d';
+  ctx.beginPath(); ctx.arc(fk.ex, fk.ey, 9, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(fk.ex, fk.ey, 14, 0, Math.PI * 2); ctx.stroke();
+
+  // IK target marker
+  if (mode === 'ik' && target) {
+    ctx.strokeStyle = ikUnreachable ? '#f87171' : '#fbbf24';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.arc(target.x, target.y, 18, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(target.x - 8, target.y); ctx.lineTo(target.x + 8, target.y);
+    ctx.moveTo(target.x, target.y - 8); ctx.lineTo(target.x, target.y + 8);
+    ctx.stroke();
+  }
+
+  // labels
+  ctx.fillStyle = '#9aa4bf';
+  ctx.font = '12px ui-monospace';
+  ctx.fillText('θ₁', ORIGIN.x + 12, ORIGIN.y - 12);
+  ctx.fillText('θ₂', fk.elx + 12, fk.ely - 12);
+  ctx.fillStyle = mode === 'ik' ? '#fbbf24' : '#9aa4bf';
+  ctx.fillText('(drag me)', fk.ex + 18, fk.ey - 6);
+
+  // readouts
+  const relX = (fk.ex - ORIGIN.x).toFixed(1);
+  const relY = (ORIGIN.y - fk.ey).toFixed(1);
+  $('exVal').textContent = relX;
+  $('eyVal').textContent = relY;
+  $('elxVal').textContent = (fk.elx - ORIGIN.x).toFixed(1);
+  $('elyVal').textContent = (ORIGIN.y - fk.ely).toFixed(1);
+  $('reachMin').textContent = Math.abs(L1 - L2).toFixed(0);
+  $('reachMax').textContent = (L1 + L2).toFixed(0);
+  $('ikStatus').textContent = mode === 'ik' ? (ikUnreachable ? 'UNREACHABLE' : 'OK') : 'FK mode';
+  $('ikStatus').style.color = ikUnreachable ? '#f87171' : (mode === 'ik' ? '#4ade80' : '#9aa4bf');
+}
+
+// ---- Sliders ----
+['theta1', 'theta2', 'L1', 'L2'].forEach(id => {
+  $(id).addEventListener('input', e => {
+    if (id === 'theta1') { theta1 = +e.target.value * Math.PI / 180; $('theta1Val').textContent = e.target.value + '°'; }
+    if (id === 'theta2') { theta2 = +e.target.value * Math.PI / 180; $('theta2Val').textContent = e.target.value + '°'; }
+    if (id === 'L1') { L1 = +e.target.value; $('L1Val').textContent = e.target.value; }
+    if (id === 'L2') { L2 = +e.target.value; $('L2Val').textContent = e.target.value; }
+    if (mode === 'ik' && target) solveIK(target.x, target.y);
+    draw();
+  });
+});
+
+// ---- Mode toggle ----
+document.querySelectorAll('[data-mode]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-mode]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    mode = b.dataset.mode;
+    if (mode === 'ik' && !target) {
+      const fk = computeFK();
+      target = { x: fk.ex, y: fk.ey };
+    }
+    draw();
+  });
+});
+
+$('solnToggle').addEventListener('click', () => {
+  elbowSolution *= -1;
+  if (mode === 'ik' && target) solveIK(target.x, target.y);
+  draw();
+});
+
+$('resetBtn').addEventListener('click', () => {
+  theta1 = 45 * Math.PI / 180;
+  theta2 = -60 * Math.PI / 180;
+  L1 = 120; L2 = 100;
+  target = null; elbowSolution = 1; ikUnreachable = false;
+  $('L1').value = 120; $('L1Val').textContent = 120;
+  $('L2').value = 100; $('L2Val').textContent = 100;
+  setSliders(theta1, theta2);
+  draw();
+});
+
+// ---- Canvas drag for IK ----
+function getMouse(e) {
+  const r = cv.getBoundingClientRect();
+  const scaleX = cv.width / r.width;
+  const scaleY = cv.height / r.height;
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+  return { x: cx * scaleX, y: cy * scaleY };
+}
+
+cv.addEventListener('mousedown', e => {
+  if (mode !== 'ik') return;
+  dragging = true;
+  const m = getMouse(e);
+  target = m;
+  solveIK(m.x, m.y);
+  draw();
+});
+cv.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const m = getMouse(e);
+  target = m;
+  solveIK(m.x, m.y);
+  draw();
+});
+window.addEventListener('mouseup', () => { dragging = false; });
+
+cv.addEventListener('touchstart', e => {
+  if (mode !== 'ik') return;
+  dragging = true;
+  const m = getMouse(e);
+  target = m; solveIK(m.x, m.y); draw();
+  e.preventDefault();
+}, { passive: false });
+cv.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  const m = getMouse(e);
+  target = m; solveIK(m.x, m.y); draw();
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchend', () => { dragging = false; });
+
+draw();
+</script>
+</body>
+</html>

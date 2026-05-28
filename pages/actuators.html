@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Actuators &amp; Drive Systems — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 2 · <strong>Actuators</strong></p>
+  <header class="page-head">
+    <h1>Actuators &amp; Drive Systems</h1>
+    <p class="sub">Three types of motors do nearly all the work in robotics. Each below is interactive — adjust the inputs and see what they do.</p>
+  </header>
+
+  <!-- DC MOTOR -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent)">⚡</span> DC Motor + PWM</h2>
+    <p style="color: var(--text-dim)">A DC motor's speed is roughly proportional to voltage. Microcontrollers can't easily vary voltage — they vary the <strong>duty cycle</strong> of a fast on/off signal (PWM). The motor's inertia smooths the pulses into average power.</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="dcCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Controls</h3>
+          <div class="control">
+            <label>Duty cycle</label>
+            <input type="range" id="dcDuty" min="0" max="100" value="50">
+            <span class="val" id="dcDutyVal">50 %</span>
+          </div>
+          <div class="control">
+            <label>Direction</label>
+            <input type="range" id="dcDir" min="-1" max="1" step="2" value="1">
+            <span class="val" id="dcDirVal">FWD</span>
+          </div>
+          <div class="control">
+            <label>Load (friction)</label>
+            <input type="range" id="dcLoad" min="0" max="100" value="20">
+            <span class="val" id="dcLoadVal">20 %</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Live state</h3>
+          <div class="readouts">
+            <div><span class="k">Effective voltage</span><span class="v" id="dcVolt">— V</span></div>
+            <div><span class="k">Speed</span><span class="v" id="dcSpeed">— RPM</span></div>
+            <div><span class="k">Torque vs Load</span><span class="v" id="dcTorque">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVO -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent-2)">🎯</span> Hobby Servo</h2>
+    <p style="color: var(--text-dim)">A servo is a DC motor + gearbox + potentiometer + small controller, all in one. You command an <em>angle</em>, the servo's internal controller drives the motor until the pot matches.</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="srvCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Command</h3>
+          <div class="control">
+            <label>Target angle</label>
+            <input type="range" id="srvTarget" min="0" max="180" value="90">
+            <span class="val" id="srvTargetVal">90°</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">PWM pulse width: <strong id="srvPulse">1500 µs</strong> — typical servos accept 1000 µs (0°) to 2000 µs (180°) at 50 Hz.</p>
+        </div>
+        <div class="panel">
+          <h3>Live state</h3>
+          <div class="readouts">
+            <div><span class="k">Commanded</span><span class="v" id="srvCmd">90°</span></div>
+            <div><span class="k">Actual</span><span class="v" id="srvAct">90°</span></div>
+            <div><span class="k">Error</span><span class="v" id="srvErr">0°</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GEARBOX -->
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2><span style="color: var(--accent-3)">⚙️</span> Gearbox Trade-off</h2>
+    <p style="color: var(--text-dim)">A gearbox is a <strong>trade</strong>: multiply torque by N, divide speed by N. There is no free lunch (minus a few percent friction loss).</p>
+    <div class="lab split">
+      <div class="viz">
+        <canvas id="gbCanvas" width="600" height="320"></canvas>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>Gear ratio</h3>
+          <div class="control">
+            <label>Ratio (N:1)</label>
+            <input type="range" id="gbRatio" min="1" max="100" value="10">
+            <span class="val" id="gbRatioVal">10 : 1</span>
+          </div>
+          <div class="control">
+            <label>Motor RPM</label>
+            <input type="range" id="gbRpm" min="100" max="6000" step="100" value="3000">
+            <span class="val" id="gbRpmVal">3000</span>
+          </div>
+          <div class="control">
+            <label>Motor torque (N·cm)</label>
+            <input type="range" id="gbTorque" min="1" max="50" value="5">
+            <span class="val" id="gbTorqueVal">5</span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Output</h3>
+          <div class="readouts">
+            <div><span class="k">Output RPM</span><span class="v" id="gbOutRpm">—</span></div>
+            <div><span class="k">Output torque</span><span class="v" id="gbOutTorque">— N·cm</span></div>
+            <div><span class="k">Power (W, ideal)</span><span class="v" id="gbPower">—</span></div>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem">For your Pi car: typical 1:48 gear motors give ~150 RPM @ 6V — enough torque to climb a small ramp, slow enough to control.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <p><strong>How they combine in the Pi car:</strong> two DC gear motors (one per side, differential drive) controlled by an L298N H-bridge. The Pi sends two GPIO signals per motor (forward/reverse) plus one PWM (speed). A single servo, optionally, can sweep an ultrasonic sensor side-to-side to scan for obstacles.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+// ============ DC MOTOR ============
+(() => {
+  const cv = document.getElementById('dcCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let angle = 0;
+  let lastT = performance.now();
+
+  function tick() {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    lastT = now;
+    const duty = +document.getElementById('dcDuty').value;
+    const dir = +document.getElementById('dcDir').value;
+    const load = +document.getElementById('dcLoad').value;
+    const voltage = duty / 100 * 6;          // assume 6V supply
+    const idealRpm = voltage / 6 * 300;       // 300 RPM at full
+    const actualRpm = Math.max(0, idealRpm - load * 0.5);
+    angle = (angle + dir * (actualRpm / 60) * 360 * dt) % 360;
+
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // PWM waveform (top)
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    const baseY = 60;
+    const pwmW = 350;
+    const period = pwmW / 4;
+    const high = baseY - 25;
+    const low = baseY + 5;
+    let x = 30;
+    ctx.moveTo(x, low);
+    for (let i = 0; i < 4; i++) {
+      const onW = period * duty / 100;
+      ctx.lineTo(x, high); ctx.lineTo(x + onW, high);
+      ctx.lineTo(x + onW, low); ctx.lineTo(x + period, low);
+      x += period;
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#9aa4bf';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('PWM signal — duty: ' + duty + '%', 30, 30);
+
+    // motor
+    const mx = 450, my = 200;
+    ctx.fillStyle = '#1f2937';
+    ctx.beginPath(); ctx.arc(mx, my, 80, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#374151';
+    ctx.beginPath(); ctx.arc(mx, my, 70, 0, Math.PI * 2); ctx.fill();
+
+    // rotor
+    const a = angle * Math.PI / 180;
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 6;
+    for (let i = 0; i < 3; i++) {
+      const aa = a + i * Math.PI * 2 / 3;
+      ctx.beginPath();
+      ctx.moveTo(mx, my);
+      ctx.lineTo(mx + Math.cos(aa) * 55, my + Math.sin(aa) * 55);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#7c4dff';
+    ctx.beginPath(); ctx.arc(mx, my, 12, 0, Math.PI * 2); ctx.fill();
+
+    // shaft + load
+    ctx.strokeStyle = '#9aa4bf';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(mx + 80, my); ctx.lineTo(mx + 130, my); ctx.stroke();
+    ctx.fillStyle = '#4ade80';
+    ctx.fillRect(mx + 130, my - 20, 30, 40);
+    ctx.fillStyle = '#0a0e1a';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('load', mx + 131, my + 3);
+
+    document.getElementById('dcDutyVal').textContent = duty + ' %';
+    document.getElementById('dcDirVal').textContent = dir > 0 ? 'FWD' : 'REV';
+    document.getElementById('dcLoadVal').textContent = load + ' %';
+    document.getElementById('dcVolt').textContent = voltage.toFixed(2) + ' V';
+    document.getElementById('dcSpeed').textContent = actualRpm.toFixed(0) + ' RPM';
+    document.getElementById('dcTorque').textContent = actualRpm < 5 && duty > 0 ? 'STALLED' : 'OK';
+    document.getElementById('dcTorque').style.color = actualRpm < 5 && duty > 0 ? '#f87171' : '#4ade80';
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ============ SERVO ============
+(() => {
+  const cv = document.getElementById('srvCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let actual = 90;
+  let lastT = performance.now();
+
+  function tick() {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    lastT = now;
+    const target = +document.getElementById('srvTarget').value;
+    const err = target - actual;
+    actual += Math.sign(err) * Math.min(Math.abs(err), 180 * dt);
+
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // protractor
+    const cx = W / 2, cy = H * 0.75, R = 120;
+    ctx.strokeStyle = '#232b44';
+    ctx.lineWidth = 1;
+    for (let a = 0; a <= 180; a += 15) {
+      const ar = (180 - a) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(ar) * (R - 8), cy - Math.sin(ar) * (R - 8));
+      ctx.lineTo(cx + Math.cos(ar) * R, cy - Math.sin(ar) * R);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = '#1a2138';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, R, Math.PI, Math.PI * 2); ctx.stroke();
+
+    // servo body
+    ctx.fillStyle = '#1f2937';
+    ctx.fillRect(cx - 40, cy - 5, 80, 60);
+    ctx.fillStyle = '#7c4dff';
+    ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI * 2); ctx.fill();
+
+    // target arm (ghost)
+    const tA = (180 - target) * Math.PI / 180;
+    ctx.strokeStyle = 'rgba(251,191,36,0.3)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(tA) * (R - 20), cy - Math.sin(tA) * (R - 20));
+    ctx.stroke();
+
+    // actual arm
+    const aA = (180 - actual) * Math.PI / 180;
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(aA) * (R - 20), cy - Math.sin(aA) * (R - 20));
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(cx + Math.cos(aA) * (R - 20), cy - Math.sin(aA) * (R - 20), 8, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = '#9aa4bf';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('0°', cx + R + 6, cy + 4);
+    ctx.fillText('180°', cx - R - 32, cy + 4);
+
+    document.getElementById('srvTargetVal').textContent = target + '°';
+    document.getElementById('srvCmd').textContent = target + '°';
+    document.getElementById('srvAct').textContent = actual.toFixed(1) + '°';
+    document.getElementById('srvErr').textContent = err.toFixed(1) + '°';
+    document.getElementById('srvPulse').textContent = (1000 + target * 1000 / 180).toFixed(0) + ' µs';
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ============ GEARBOX ============
+(() => {
+  const cv = document.getElementById('gbCanvas');
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  let aA = 0, aB = 0;
+  let lastT = performance.now();
+
+  function tick() {
+    const now = performance.now();
+    const dt = (now - lastT) / 1000;
+    lastT = now;
+
+    const ratio = +document.getElementById('gbRatio').value;
+    const rpm = +document.getElementById('gbRpm').value;
+    const torque = +document.getElementById('gbTorque').value;
+
+    const outRpm = rpm / ratio;
+    const outTorque = torque * ratio * 0.92; // ~8% loss
+
+    aA = (aA + rpm / 60 * 360 * dt) % 360;
+    aB = (aB - outRpm / 60 * 360 * dt) % 360;
+
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // input gear (small)
+    const r1 = 30 + Math.min(40, 50 / Math.sqrt(ratio));
+    const r2 = r1 * Math.sqrt(ratio);
+    const totalW = r1 + r2 + 30;
+    const x1 = W / 2 - totalW / 2 + r1;
+    const x2 = x1 + r1 + r2;
+    const cy = H / 2;
+
+    drawGear(x1, cy, r1, 14, aA, '#00e5ff');
+    drawGear(x2, cy, r2, Math.round(14 * ratio / 2) + 6, aB, '#7c4dff');
+
+    ctx.fillStyle = '#9aa4bf';
+    ctx.font = '11px ui-monospace';
+    ctx.fillText('MOTOR', x1 - 22, cy + r1 + 25);
+    ctx.fillText('OUTPUT', x2 - 26, cy + r2 + 25);
+
+    document.getElementById('gbRatioVal').textContent = ratio + ' : 1';
+    document.getElementById('gbRpmVal').textContent = rpm;
+    document.getElementById('gbTorqueVal').textContent = torque;
+    document.getElementById('gbOutRpm').textContent = outRpm.toFixed(1);
+    document.getElementById('gbOutTorque').textContent = outTorque.toFixed(2) + ' N·cm';
+    const power = (outRpm * 2 * Math.PI / 60) * (outTorque / 100); // W
+    document.getElementById('gbPower').textContent = power.toFixed(2) + ' W';
+
+    requestAnimationFrame(tick);
+  }
+
+  function drawGear(cx, cy, r, teeth, angle, color) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle * Math.PI / 180);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i < teeth * 2; i++) {
+      const a = i / (teeth * 2) * Math.PI * 2;
+      const rr = i % 2 === 0 ? r : r - 8;
+      const x = Math.cos(a) * rr, y = Math.sin(a) * rr;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#0a0e1a';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  tick();
+})();
+</script>
+</body>
+</html>

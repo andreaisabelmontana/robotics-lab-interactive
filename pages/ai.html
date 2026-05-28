@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Robotics &amp; AI Integration — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 1 · <strong>Robotics &amp; AI</strong></p>
+  <header class="page-head">
+    <h1>The Sense → Think → Act loop</h1>
+    <p class="sub">Every robot — from a Roomba to Atlas — runs the same fundamental cycle. AI changes how rich each stage can be, not the loop itself.</p>
+  </header>
+
+  <div class="callout">
+    <p><strong>Click each stage</strong> below to see what happens inside, and what AI techniques can replace or enhance the classical approach.</p>
+  </div>
+
+  <div class="lab">
+    <div class="viz" style="min-height: 500px;">
+      <svg viewBox="0 0 600 500" id="loopSvg" style="width: 100%; max-width: 600px;">
+        <defs>
+          <linearGradient id="gradA" x1="0" x2="1"><stop offset="0" stop-color="#00e5ff"/><stop offset="1" stop-color="#7c4dff"/></linearGradient>
+          <marker id="arrowH" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L9,3 z" fill="#00e5ff"/>
+          </marker>
+        </defs>
+        <!-- center: robot -->
+        <circle cx="300" cy="250" r="50" fill="#161d31" stroke="#7c4dff" stroke-width="2"/>
+        <text x="300" y="245" text-anchor="middle" fill="#e7ecf5" font-size="14" font-weight="600">ROBOT</text>
+        <text x="300" y="265" text-anchor="middle" fill="#9aa4bf" font-size="11">closed-loop</text>
+
+        <!-- 3 nodes -->
+        <g class="stage" data-stage="sense" style="cursor:pointer">
+          <circle cx="150" cy="120" r="55" fill="#161d31" stroke="#00e5ff" stroke-width="2"/>
+          <text x="150" y="115" text-anchor="middle" fill="#00e5ff" font-size="20">📡</text>
+          <text x="150" y="138" text-anchor="middle" fill="#e7ecf5" font-size="14" font-weight="600">SENSE</text>
+        </g>
+
+        <g class="stage" data-stage="think" style="cursor:pointer">
+          <circle cx="450" cy="120" r="55" fill="#161d31" stroke="#7c4dff" stroke-width="2"/>
+          <text x="450" y="115" text-anchor="middle" fill="#7c4dff" font-size="20">🧠</text>
+          <text x="450" y="138" text-anchor="middle" fill="#e7ecf5" font-size="14" font-weight="600">THINK</text>
+        </g>
+
+        <g class="stage" data-stage="act" style="cursor:pointer">
+          <circle cx="300" cy="420" r="55" fill="#161d31" stroke="#ff4d8d" stroke-width="2"/>
+          <text x="300" y="415" text-anchor="middle" fill="#ff4d8d" font-size="20">⚙️</text>
+          <text x="300" y="438" text-anchor="middle" fill="#e7ecf5" font-size="14" font-weight="600">ACT</text>
+        </g>
+
+        <!-- arrows -->
+        <path d="M 200 130 Q 300 80 400 130" stroke="#00e5ff" stroke-width="2" fill="none" marker-end="url(#arrowH)"/>
+        <path d="M 440 170 Q 420 320 340 405" stroke="#00e5ff" stroke-width="2" fill="none" marker-end="url(#arrowH)"/>
+        <path d="M 260 405 Q 100 320 140 170" stroke="#00e5ff" stroke-width="2" fill="none" marker-end="url(#arrowH)"/>
+
+        <!-- environment -->
+        <rect x="40" y="450" width="520" height="30" rx="6" fill="#0a0e1a" stroke="#232b44"/>
+        <text x="300" y="470" text-anchor="middle" fill="#6b7595" font-size="12">ENVIRONMENT (the world the robot interacts with)</text>
+      </svg>
+    </div>
+
+    <div class="panel">
+      <div id="stageDetail">
+        <h3>Click any stage</h3>
+        <p style="color: var(--text-dim)">Each of the three nodes opens a deep-dive into what that stage actually does, the classical engineering approach, and how AI/ML can supercharge it.</p>
+        <div class="callout" style="margin-top: 1rem">
+          <p><strong>Loop frequency matters.</strong> A factory arm runs its loop at 1000 Hz. A Roomba at 50 Hz. A self-driving car at 10–100 Hz depending on the stage. Slower loops → more time to think → can use bigger models. Faster loops → tighter control → must be simpler.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>Where AI sits in the loop</h2>
+    <p>Traditionally, robotics engineers hand-coded each stage. Modern robotics uses ML/AI for the parts that are <em>hard to specify rules for</em>:</p>
+    <table style="width:100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border)">
+          <th style="text-align:left; padding: 0.6rem; color: var(--accent)">Stage</th>
+          <th style="text-align:left; padding: 0.6rem; color: var(--accent)">Classical</th>
+          <th style="text-align:left; padding: 0.6rem; color: var(--accent)">AI / ML</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid var(--border)">
+          <td style="padding: 0.6rem"><strong>Sense</strong></td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">Edge detection, Hough transforms, thresholding</td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">CNNs for object detection, segmentation, depth estimation</td>
+        </tr>
+        <tr style="border-bottom: 1px solid var(--border)">
+          <td style="padding: 0.6rem"><strong>Think</strong></td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">A* search, behavior trees, state machines</td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">Reinforcement learning policies, LLM planners, MPC</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.6rem"><strong>Act</strong></td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">PID controllers, inverse kinematics solvers</td>
+          <td style="padding: 0.6rem; color: var(--text-dim)">Learned dynamics models, neural feedback control</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel" style="margin-top: 1rem">
+    <h2>Your Raspberry Pi car as the loop</h2>
+    <ul>
+      <li><strong>Sense:</strong> HC-SR04 ultrasonic returns distance in cm.</li>
+      <li><strong>Think:</strong> <code>if distance &lt; 20: turn()</code> — start with this. Upgrade to a learned policy later.</li>
+      <li><strong>Act:</strong> PWM signal to L298N motor driver → wheels turn.</li>
+      <li><strong>Loop:</strong> Repeat ~10 times per second in your Python script.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+const stages = {
+  sense: {
+    title: '📡 SENSE — gather information',
+    body: `<p>The robot reads its environment through <strong>transducers</strong> that convert physical phenomena into electrical signals your CPU can process.</p>
+    <h4 style="margin-top: 1rem; color: var(--accent)">Classical sensing</h4>
+    <ul>
+      <li><strong>Ultrasonic</strong> (HC-SR04): time-of-flight of a 40 kHz pulse → distance.</li>
+      <li><strong>Encoder</strong>: ticks counted on a rotating wheel → speed &amp; position.</li>
+      <li><strong>IMU</strong>: accelerometer + gyro → orientation.</li>
+    </ul>
+    <h4 style="margin-top: 1rem; color: var(--accent-2)">AI-enhanced sensing</h4>
+    <ul>
+      <li><strong>Vision (CNN)</strong>: a camera + YOLO can identify "stop sign," "pedestrian," "doorway."</li>
+      <li><strong>Sensor fusion</strong>: Kalman filters combine noisy IMU + GPS + vision into one clean state estimate.</li>
+    </ul>
+    <p><span class="tag">YOUR LAB</span> Pepper has 3D cameras, microphones, sonar, touch sensors. Your Pi car will have ultrasonic + (optionally) a camera.</p>`
+  },
+  think: {
+    title: '🧠 THINK — decide what to do',
+    body: `<p>Given the current state and a goal, the robot must <strong>plan</strong> its next move. This is where AI has had the most dramatic impact.</p>
+    <h4 style="margin-top: 1rem; color: var(--accent)">Classical decision-making</h4>
+    <ul>
+      <li><strong>Rule-based</strong>: <code>if obstacle_ahead: turn_right</code>. Simple, predictable, debuggable.</li>
+      <li><strong>State machines</strong>: explicit states (IDLE → SEEKING → AVOIDING) with transitions.</li>
+      <li><strong>Search</strong>: A* finds the shortest path through a known map.</li>
+    </ul>
+    <h4 style="margin-top: 1rem; color: var(--accent-2)">AI-enhanced thinking</h4>
+    <ul>
+      <li><strong>Reinforcement learning</strong>: the robot tries actions, gets rewards, learns a policy.</li>
+      <li><strong>LLM planners</strong>: "Make me coffee" → an LLM breaks it into sub-tasks.</li>
+      <li><strong>Behavior cloning</strong>: record a human driving, train a neural net to imitate.</li>
+    </ul>
+    <p><span class="tag">PRINCIPLE</span> Start with rules. Add learning only where rules become unmaintainable.</p>`
+  },
+  act: {
+    title: '⚙️ ACT — change the world',
+    body: `<p>The robot's decision becomes a physical force in the world through <strong>actuators</strong> — and a <strong>controller</strong> ensures the actuator achieves what was commanded despite friction, gravity, load.</p>
+    <h4 style="margin-top: 1rem; color: var(--accent)">Classical actuation</h4>
+    <ul>
+      <li><strong>PID controller</strong>: the workhorse of all motion control. Tune Kp, Ki, Kd.</li>
+      <li><strong>Inverse kinematics</strong>: given a target hand position, compute joint angles.</li>
+      <li><strong>Trajectory planning</strong>: smooth motion profiles (trapezoidal velocity, S-curves).</li>
+    </ul>
+    <h4 style="margin-top: 1rem; color: var(--accent-2)">AI-enhanced action</h4>
+    <ul>
+      <li><strong>Learned dynamics</strong>: a neural net predicts how the robot responds, used inside MPC.</li>
+      <li><strong>End-to-end policies</strong>: raw vision → joint torques (e.g. OpenAI's robotic hand).</li>
+    </ul>
+    <p><span class="tag">YOUR LAB</span> Your Pi car will use PWM (pulse-width modulation) to vary motor power, then a feedback loop to drive straight.</p>`
+  }
+};
+
+document.querySelectorAll('.stage').forEach(el => {
+  el.addEventListener('click', () => {
+    const s = stages[el.dataset.stage];
+    document.getElementById('stageDetail').innerHTML = `<h3>${s.title}</h3>${s.body}`;
+    document.querySelectorAll('.stage circle').forEach(c => c.setAttribute('stroke-width', '2'));
+    el.querySelector('circle').setAttribute('stroke-width', '5');
+  });
+});
+</script>
+</body>
+</html>

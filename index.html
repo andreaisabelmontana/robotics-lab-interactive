@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Introduction to Robotics Lab — Interactive Visualization</title>
+<meta name="description" content="Interactive companion to IE University's Introduction to Robotics Lab. Visualize kinematics, sensors, control systems, NLP, and autonomous navigation." />
+<link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <span class="logo">◆</span>
+    <span class="brand-text">Robotics Lab <em>Interactive</em></span>
+  </a>
+  <nav class="site-nav">
+    <a href="#m1">Foundations</a>
+    <a href="#m2">Components</a>
+    <a href="#m3">Humanoid</a>
+    <a href="#m4">Raspberry Pi</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow">IE University · IRL-N3CSAI · Suzan T S Awinat</p>
+    <h1>Build robots by <em>seeing</em> how they think and move.</h1>
+    <p class="lede">A live, in-browser playground for every core concept in the <strong>Introduction to Robotics Lab</strong> — from forward kinematics and PID control to autonomous obstacle avoidance. Drag joints. Tune gains. Drive the car.</p>
+    <div class="cta-row">
+      <a href="pages/kinematics.html" class="btn primary">Start: Kinematics →</a>
+      <a href="pages/autonomous.html" class="btn ghost">Drive the car</a>
+    </div>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <svg viewBox="0 0 400 400">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#00e5ff"/>
+          <stop offset="1" stop-color="#7c4dff"/>
+        </linearGradient>
+      </defs>
+      <circle cx="200" cy="200" r="180" fill="none" stroke="url(#g1)" stroke-width="1" opacity="0.4"/>
+      <circle cx="200" cy="200" r="140" fill="none" stroke="url(#g1)" stroke-width="1" opacity="0.3"/>
+      <circle cx="200" cy="200" r="100" fill="none" stroke="url(#g1)" stroke-width="1" opacity="0.2"/>
+      <g id="armAnim" transform="translate(200 250)">
+        <line x1="0" y1="0" x2="80" y2="-60" stroke="url(#g1)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="80" y1="-60" x2="160" y2="-90" stroke="url(#g1)" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r="10" fill="#00e5ff"/>
+        <circle cx="80" cy="-60" r="8" fill="#7c4dff"/>
+        <circle cx="160" cy="-90" r="6" fill="#fff"/>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section class="module" id="m1">
+  <header class="module-head">
+    <span class="module-tag">Module 1 / 4</span>
+    <h2>Foundations of Robotics</h2>
+    <p>The historical roots, the AI loop that makes a machine a robot, and the math of motion.</p>
+  </header>
+  <div class="grid">
+    <a class="card" href="pages/history.html">
+      <span class="ic">⏳</span>
+      <h3>History &amp; Evolution</h3>
+      <p>An interactive timeline from Hero of Alexandria's automata to Boston Dynamics' Atlas. Click any era to expand.</p>
+    </a>
+    <a class="card" href="pages/ai.html">
+      <span class="ic">🧠</span>
+      <h3>Robotics &amp; AI</h3>
+      <p>Visualize the <em>Sense → Think → Act</em> loop. See where perception, planning, and control fit together.</p>
+    </a>
+    <a class="card highlight" href="pages/kinematics.html">
+      <span class="ic">🦾</span>
+      <h3>Kinematics</h3>
+      <p>Drag the end-effector to solve inverse kinematics on a 2-link arm. Or move joints to see forward kinematics live.</p>
+    </a>
+  </div>
+</section>
+
+<section class="module" id="m2">
+  <header class="module-head">
+    <span class="module-tag">Module 2 / 4</span>
+    <h2>Robotics Components</h2>
+    <p>The senses and the muscles — and the controller that keeps everything stable.</p>
+  </header>
+  <div class="grid">
+    <a class="card" href="pages/sensors.html">
+      <span class="ic">📡</span>
+      <h3>Sensors</h3>
+      <p>Live ultrasonic distance, IR line-follower, and rotary encoder simulations. Move the obstacle, watch the readings.</p>
+    </a>
+    <a class="card" href="pages/actuators.html">
+      <span class="ic">⚙️</span>
+      <h3>Actuators</h3>
+      <p>DC motor, servo, and stepper — see how each converts current into motion, with gearbox torque/speed trade-off.</p>
+    </a>
+    <a class="card highlight" href="pages/control.html">
+      <span class="ic">📈</span>
+      <h3>PID Control</h3>
+      <p>Tune <em>Kp</em>, <em>Ki</em>, <em>Kd</em> on a live setpoint-tracking task. See overshoot, oscillation, and steady-state error in real time.</p>
+    </a>
+  </div>
+</section>
+
+<section class="module" id="m3">
+  <header class="module-head">
+    <span class="module-tag">Module 3 / 4</span>
+    <h2>Humanoid Robots Interaction</h2>
+    <p>Pepper, Choregraphe, and the language layer that turns speech into behavior.</p>
+  </header>
+  <div class="grid">
+    <a class="card" href="pages/pepper.html">
+      <span class="ic">🤖</span>
+      <h3>Pepper Robot</h3>
+      <p>An interactive Pepper avatar — wave, speak, look around. Trigger behaviors the way Choregraphe blocks would.</p>
+    </a>
+    <a class="card highlight" href="pages/nlp.html">
+      <span class="ic">💬</span>
+      <h3>NLP for Robots</h3>
+      <p>Type a command — see how it's tokenized, classified into an intent, and mapped to a robot action.</p>
+    </a>
+  </div>
+</section>
+
+<section class="module" id="m4">
+  <header class="module-head">
+    <span class="module-tag">Module 4 / 4</span>
+    <h2>Raspberry Pi Car Project</h2>
+    <p>From GPIO wiring to a fully autonomous obstacle-avoiding vehicle.</p>
+  </header>
+  <div class="grid">
+    <a class="card" href="pages/raspi-car.html">
+      <span class="ic">🔌</span>
+      <h3>Build &amp; Wire</h3>
+      <p>Interactive Raspberry Pi pinout. Click a GPIO to see what it does and which component you'd connect.</p>
+    </a>
+    <a class="card highlight" href="pages/autonomous.html">
+      <span class="ic">🚗</span>
+      <h3>Autonomous Navigation</h3>
+      <p>A live 2D simulator. Drop the car in a maze, switch between manual driving and sensor-based autonomy.</p>
+    </a>
+  </div>
+</section>
+
+<section class="summary">
+  <h2>Course at a glance</h2>
+  <div class="syllabus">
+    <div><strong>15</strong><span>Sessions</span></div>
+    <div><strong>4</strong><span>Modules</span></div>
+    <div><strong>3.0</strong><span>Credits</span></div>
+    <div><strong>50%</strong><span>Workgroup Experiments</span></div>
+    <div><strong>20%</strong><span>Intermediate Tests</span></div>
+    <div><strong>20%</strong><span>Report Writing</span></div>
+    <div><strong>10%</strong><span>Class Participation</span></div>
+  </div>
+  <p class="bib">Compulsory reading: John J. Craig, <em>Introduction to Robotics: Mechanics and Control</em> (3rd ed., Pearson, 2004). Companion: Diwakar Vaish, <em>Python Robotics Projects</em> (Packt, 2018).</p>
+</section>
+</main>
+
+<footer class="site-footer">
+  <p>Built as an interactive visualization companion to IE University's <strong>Introduction to Robotics Lab</strong>. Not affiliated with IE University. All simulations run client-side — no data leaves your browser.</p>
+</footer>
+</body>
+</html>

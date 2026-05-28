@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>History &amp; Evolution of Robotics — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 1 · <strong>History &amp; Evolution</strong></p>
+  <header class="page-head">
+    <h1>History &amp; Evolution of Robotics</h1>
+    <p class="sub">From mythological automata to autonomous humanoids — click any era to expand. The same engineering questions keep coming back: how to <em>perceive</em>, <em>decide</em>, and <em>move</em>.</p>
+  </header>
+
+  <div class="callout">
+    <p><strong>Core idea —</strong> Robotics is the convergence of three traditions: <em>mechanical engineering</em> (motion), <em>control theory</em> (stability), and <em>computer science</em> (decision-making). Each era pushed one tradition further.</p>
+  </div>
+
+  <div class="timeline" id="timeline">
+    <div class="tl-item" data-open="true">
+      <div class="yr">~250 BCE</div>
+      <h3>Ancient automata</h3>
+      <p>Hero of Alexandria's steam-powered devices and self-opening temple doors.</p>
+      <div class="det">
+        <p>The earliest documented "robots" were pneumatic and hydraulic <strong>automata</strong> — programmable by physical pegs and cams, not code. Hero's <em>Pneumatica</em> describes wind-powered organs and coin-operated holy water dispensers. These machines established the principle of <strong>stored programs</strong> two millennia before Turing.</p>
+        <p><span class="tag">PRINCIPLE</span> Sequential mechanical control via cams = the great-great-grandfather of the modern state machine.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1495</div>
+      <h3>Leonardo's mechanical knight</h3>
+      <p>Da Vinci's humanoid robot — gears, pulleys, cables.</p>
+      <div class="det">
+        <p>Designed for a Milan court pageant, Leonardo's knight could sit, stand, raise its visor, and move its arms. Driven by a system of pulleys, cables, and a programmable cylinder cam — essentially the first <strong>humanoid kinematic chain</strong>.</p>
+        <p><span class="tag">RELATES TO</span> Module 1 — Kinematics (DOF, linkages, joint coordination).</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1920</div>
+      <h3>The word "robot" is born</h3>
+      <p>Karel Čapek's play <em>R.U.R.</em> coins <em>robota</em> (forced labor).</p>
+      <div class="det">
+        <p>The Czech term <em>robota</em> means "drudgery" or "forced labor." Čapek's play imagined synthetic humans manufactured for cheap labor who eventually rebel — establishing both the cultural archetype and the <strong>ethical anxieties</strong> we still grapple with today.</p>
+        <p><span class="tag">RELATES TO</span> Course topic: <em>Ethical Considerations of Robotics &amp; AI in Society</em>.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1942</div>
+      <h3>Asimov's Three Laws</h3>
+      <p>The first formal ethics framework for autonomous machines.</p>
+      <div class="det">
+        <p>In <em>Runaround</em>, Isaac Asimov published the Three Laws of Robotics:</p>
+        <ol>
+          <li>A robot may not injure a human being or, through inaction, allow a human to come to harm.</li>
+          <li>A robot must obey orders given by humans except where such orders conflict with the First Law.</li>
+          <li>A robot must protect its own existence as long as such protection does not conflict with the First or Second Law.</li>
+        </ol>
+        <p>Real safety-critical robotics still uses descendants of this — safety hierarchies, watchdog timers, and emergency-stop overrides.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1948</div>
+      <h3>Cybernetics &amp; Grey Walter's tortoises</h3>
+      <p>Norbert Wiener formalizes feedback. Walter builds <em>Elmer</em> and <em>Elsie</em>.</p>
+      <div class="det">
+        <p>Wiener's <em>Cybernetics</em> defined the mathematics of feedback loops in animals and machines — the theoretical bedrock of <strong>PID control</strong>. The same year, W. Grey Walter built two tortoise-like robots that exhibited goal-seeking, light-avoiding, obstacle-avoiding behavior — proving that <strong>simple sensorimotor loops can generate apparently intelligent behavior</strong>.</p>
+        <p><span class="tag">RELATES TO</span> Module 2 — Control Systems.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1961</div>
+      <h3>Unimate — the first industrial robot</h3>
+      <p>George Devol's hydraulic arm joins a General Motors assembly line.</p>
+      <div class="det">
+        <p>Unimate weighed 1,800 kg and could handle red-hot die-cast parts that were dangerous for humans. It launched the modern <strong>industrial robot</strong> industry — by 2024, over 4 million such robots are operating worldwide.</p>
+        <p><span class="tag">PRINCIPLE</span> Repeatability + accuracy + 24/7 operation = the economic case for robots that hasn't changed in 60 years.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1969</div>
+      <h3>Shakey at Stanford</h3>
+      <p>The first general-purpose mobile robot with vision and reasoning.</p>
+      <div class="det">
+        <p>Shakey integrated <strong>perception</strong> (TV camera), <strong>planning</strong> (STRIPS — a foundational AI planning algorithm), and <strong>action</strong> (motorized base) in a single system. It also pioneered the <strong>A* search algorithm</strong>, still used in pathfinding today (yes, including in your Raspberry Pi car).</p>
+        <p><span class="tag">RELATES TO</span> Module 1 — Robotics &amp; AI. Module 4 — Autonomous Navigation.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">1986</div>
+      <h3>Subsumption architecture</h3>
+      <p>Rodney Brooks: "Intelligence without representation."</p>
+      <div class="det">
+        <p>Brooks rejected the heavy "plan-then-act" paradigm and showed that <strong>layered reactive behaviors</strong> could produce robust mobility. His insectoid robots could navigate cluttered offices without any internal world model. This philosophy underpins modern <strong>behavior-based robotics</strong>.</p>
+        <p><span class="tag">RELATES TO</span> Module 4 — Reactive obstacle avoidance.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">2000</div>
+      <h3>Honda ASIMO</h3>
+      <p>Stable, dynamic bipedal walking goes mainstream.</p>
+      <div class="det">
+        <p>ASIMO ("Advanced Step in Innovative Mobility") demonstrated reliable dynamic bipedal locomotion — running, climbing stairs, recognizing faces. Its <strong>Zero-Moment Point (ZMP)</strong> control technique is still standard for humanoid balance.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">2014</div>
+      <h3>SoftBank Pepper</h3>
+      <p>The first mass-market humanoid designed to read emotion.</p>
+      <div class="det">
+        <p>Pepper combines a 3D camera, microphones, touch sensors, and a tablet to interact with people in retail, banking, and education. Programmed via <strong>Choregraphe</strong> (visual block-based) or NAOqi (Python/C++). Pepper is the humanoid you will program in this course.</p>
+        <p><span class="tag">RELATES TO</span> Module 3 — Pepper Robot, NLP for Robots.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">2016 →</div>
+      <h3>Deep learning takes over</h3>
+      <p>End-to-end neural policies, sim-to-real transfer, foundation models.</p>
+      <div class="det">
+        <p>AlphaGo (2016), then OpenAI's robotic Rubik's Cube hand (2019), then Boston Dynamics' parkour-running Atlas (2021), then RT-2 (2023) — a foundation model that maps vision + language directly to robot actions. Robotics has moved from <em>hand-engineered control</em> to <em>learned policies</em>.</p>
+        <p><span class="tag">PRINCIPLE</span> Today: every robot is a hybrid — classical control for stability, learned models for perception and high-level decisions.</p>
+      </div>
+    </div>
+
+    <div class="tl-item">
+      <div class="yr">2026</div>
+      <h3>You are here</h3>
+      <p>Your Raspberry Pi car competition is the latest entry in this lineage.</p>
+      <div class="det">
+        <p>The autonomous obstacle-avoiding car you will build in Module 4 packages 2,500 years of robotics history into a $50 platform: <strong>sensors</strong> (ultrasonic — Hero would recognize the principle), <strong>actuators</strong> (DC motors — Devol's territory), <strong>control</strong> (PWM, feedback — Wiener's mathematics), <strong>perception &amp; decision</strong> (your Python code — Shakey's heritage).</p>
+        <p>That's the point of the course: you don't just <em>use</em> robotics, you <em>are</em> the next step in its history.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+document.querySelectorAll('.tl-item').forEach(el => {
+  if (el.dataset.open) el.classList.add('open');
+  el.addEventListener('click', () => el.classList.toggle('open'));
+});
+</script>
+</body>
+</html>

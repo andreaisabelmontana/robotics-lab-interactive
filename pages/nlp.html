@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NLP for Robots — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="pepper.html">Pepper</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 3 · <strong>NLP for Robots</strong></p>
+  <header class="page-head">
+    <h1>From speech to robot action</h1>
+    <p class="sub">Try typing a command — see how a simple intent classifier turns your words into something the robot can do. This is a tiny version of what runs inside Pepper.</p>
+  </header>
+
+  <div class="lab split">
+    <div class="panel">
+      <h3>Talk to the robot</h3>
+      <div class="chat">
+        <div class="chat-log" id="chatLog">
+          <div class="msg bot"><div class="bubble">Hi! I'm a simple intent-based NLP demo. Try: <em>"What's your name?"</em>, <em>"Wave at me"</em>, <em>"Move forward"</em>, <em>"How are you?"</em></div></div>
+        </div>
+        <div class="chat-input">
+          <input id="userInput" type="text" placeholder="Type a command..." autofocus>
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>NLP pipeline (last message)</h3>
+        <div id="pipeline" style="font-family: ui-monospace; font-size: 0.85rem;">
+          <p style="color: var(--text-dim)">Send a message to see how it's processed.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Recognized intents</h3>
+        <div style="font-family: ui-monospace; font-size: 0.8rem;">
+          <div><span style="color: var(--accent)">greeting</span>: hi, hello, hey</div>
+          <div><span style="color: var(--accent)">farewell</span>: bye, goodbye, see you</div>
+          <div><span style="color: var(--accent)">identity</span>: name, who are you</div>
+          <div><span style="color: var(--accent)">mood</span>: how are you, feeling</div>
+          <div><span style="color: var(--accent-2)">move</span>: forward, back, left, right, stop</div>
+          <div><span style="color: var(--accent-2)">gesture</span>: wave, hug, dance, point</div>
+          <div><span style="color: var(--accent-2)">look</span>: look, see, find</div>
+          <div><span style="color: var(--accent-3)">help</span>: help, what can you do</div>
+          <div><span style="color: var(--accent-3)">thanks</span>: thanks, thank you</div>
+          <div><span style="color: var(--text-mute)">fallback</span>: anything else</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>How a robot understands you</h2>
+    <p>This demo uses the <strong>simplest possible</strong> NLP: keyword matching with confidence scoring. Real systems like Pepper's NAOqi <code>ALSpeechRecognition</code> or Rasa use a pipeline that's conceptually similar but much richer:</p>
+
+    <div class="grid" style="margin-top: 1rem">
+      <div>
+        <h3 style="color: var(--accent)">1. Speech → Text</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">A neural acoustic model converts the microphone waveform into a transcript. Pepper uses Nuance / Vocon.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-2)">2. Tokenize &amp; Normalize</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">Split into words, lowercase, remove punctuation, optionally stem ("waving" → "wave").</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-3)">3. Intent Classification</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">A classifier (keywords, TF-IDF + SVM, or BERT) picks the most likely <em>intent</em> from a defined set.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent)">4. Entity Extraction</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">Pull out parameters: <em>"go forward 2 meters"</em> → intent=move, direction=forward, distance=2m.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-2)">5. Action Mapping</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">Intent + entities → a specific NAOqi call. Move forward → <code>ALMotion.moveTo(2, 0, 0)</code>.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-3)">6. Response Generation</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem">Pick a reply ("On it!"), pass to TTS, speak. Optionally launch the behavior.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="callout">
+    <p><strong>From keywords to LLMs —</strong> Modern Pepper deployments often combine classical intent recognition (fast, cheap, predictable) with an LLM fallback for open-ended questions. The trick is knowing when to escalate: a "wave at me" command shouldn't go to a 70B-parameter model.</p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+// ---- Intent definitions ----
+const intents = {
+  greeting: { keywords: ['hi', 'hello', 'hey', 'greetings', 'howdy', 'hola'], reply: 'Hello! Nice to meet you.', action: 'tts.say("Hello!") + wave_arm()' },
+  farewell: { keywords: ['bye', 'goodbye', 'see you', 'farewell', 'later', 'adios'], reply: 'Goodbye! Have a great day.', action: 'tts.say("Bye!") + wave_arm()' },
+  identity: { keywords: ['name', 'who are you', 'who r u', 'what are you', 'yourself'], reply: "I'm Pepper, a humanoid robot built by SoftBank.", action: 'tts.say("I am Pepper.")' },
+  mood: { keywords: ['how are you', 'how r u', 'feeling', 'mood', 'how do you feel'], reply: "Running smoothly — 92% battery, all motors nominal.", action: 'check_battery() + tts.say(...)' },
+  move: { keywords: ['move', 'go', 'forward', 'back', 'backward', 'left', 'right', 'stop', 'turn', 'drive', 'walk'], reply: 'Moving!', action: 'ALMotion.moveTo(dx, dy, dθ)' },
+  gesture: { keywords: ['wave', 'hug', 'dance', 'point', 'arm', 'gesture', 'sit', 'stand'], reply: 'Performing that gesture.', action: 'ALBehaviorManager.runBehavior(...)' },
+  look: { keywords: ['look', 'see', 'find', 'where', 'show me', 'watch'], reply: 'Looking around.', action: 'ALTracker.track("Face") or head_scan()' },
+  help: { keywords: ['help', 'what can you do', 'commands', 'abilities', 'options'], reply: 'I can wave, dance, move, and answer simple questions. Try: "wave at me"!', action: 'tts.say(help_text)' },
+  thanks: { keywords: ['thanks', 'thank you', 'thx', 'gracias', 'appreciate'], reply: "You're welcome!", action: 'tts.say("You\'re welcome")' }
+};
+
+const intentColors = {
+  greeting: '#00e5ff', farewell: '#00e5ff', identity: '#00e5ff', mood: '#00e5ff',
+  move: '#7c4dff', gesture: '#7c4dff', look: '#7c4dff',
+  help: '#ff4d8d', thanks: '#ff4d8d',
+  fallback: '#6b7595'
+};
+
+function classify(text) {
+  const t = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const tokens = t.split(' ').filter(Boolean);
+
+  const scores = {};
+  for (const [name, def] of Object.entries(intents)) {
+    let score = 0;
+    let matched = [];
+    for (const kw of def.keywords) {
+      if (t.includes(kw)) {
+        score += kw.split(' ').length * 2;       // multi-word phrases worth more
+        matched.push(kw);
+      }
+    }
+    if (score > 0) scores[name] = { score, matched };
+  }
+
+  let bestIntent = 'fallback';
+  let bestScore = 0;
+  let matched = [];
+  for (const [name, { score, matched: m }] of Object.entries(scores)) {
+    if (score > bestScore) {
+      bestScore = score;
+      bestIntent = name;
+      matched = m;
+    }
+  }
+  // confidence: normalized
+  const conf = Math.min(1, bestScore / 4);
+  return { tokens, intent: bestIntent, confidence: conf, matched };
+}
+
+function extractEntities(intent, text) {
+  const t = text.toLowerCase();
+  const entities = {};
+  if (intent === 'move') {
+    for (const d of ['forward', 'backward', 'back', 'left', 'right', 'stop']) {
+      if (t.includes(d)) { entities.direction = d; break; }
+    }
+    const m = t.match(/(\d+(\.\d+)?)\s*(m|meter|cm|step|steps)/);
+    if (m) { entities.distance = m[1] + (m[3].startsWith('cm') ? ' cm' : ' m'); }
+  }
+  if (intent === 'gesture') {
+    for (const g of ['wave', 'hug', 'dance', 'point', 'sit', 'stand']) {
+      if (t.includes(g)) { entities.gesture = g; break; }
+    }
+  }
+  return entities;
+}
+
+function send(text) {
+  if (!text.trim()) return;
+  const log = document.getElementById('chatLog');
+
+  // user msg
+  const u = document.createElement('div');
+  u.className = 'msg user';
+  u.innerHTML = `<div class="bubble">${escape(text)}</div>`;
+  log.appendChild(u);
+
+  // classify
+  const result = classify(text);
+  const entities = extractEntities(result.intent, text);
+  const def = intents[result.intent];
+  const reply = def ? def.reply : "I didn't understand. Try 'help'.";
+
+  // bot msg (with thinking delay)
+  setTimeout(() => {
+    const b = document.createElement('div');
+    b.className = 'msg bot';
+    b.innerHTML = `<div class="bubble">${escape(reply)}</div>
+      <div class="meta">intent: <span style="color:${intentColors[result.intent] || '#9aa4bf'}">${result.intent}</span> · conf: ${(result.confidence * 100).toFixed(0)}%</div>`;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }, 350);
+
+  // pipeline view
+  const pl = document.getElementById('pipeline');
+  pl.innerHTML = `
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 1: raw text</span><br/>"${escape(text)}"</div>
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 2: tokens</span><br/>[${result.tokens.map(t => `"${t}"`).join(', ')}]</div>
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 3: matched keywords</span><br/>[${result.matched.map(t => `"${t}"`).join(', ') || '<span style="color:#6b7595">none</span>'}]</div>
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 4: intent + confidence</span><br/>{ intent: <span style="color:${intentColors[result.intent] || '#9aa4bf'}">"${result.intent}"</span>, conf: ${result.confidence.toFixed(2)} }</div>
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 5: entities</span><br/>${JSON.stringify(entities)}</div>
+    <div style="margin-bottom: 0.6rem"><span style="color: var(--text-dim)">// Step 6: robot action</span><br/><span style="color: var(--good)">${def ? def.action : 'no_action()'}</span></div>
+  `;
+
+  log.scrollTop = log.scrollHeight;
+}
+
+function escape(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+document.getElementById('sendBtn').addEventListener('click', () => {
+  const inp = document.getElementById('userInput');
+  send(inp.value);
+  inp.value = '';
+});
+document.getElementById('userInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const inp = e.target;
+    send(inp.value);
+    inp.value = '';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pepper Robot — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="kinematics.html">Kinematics</a>
+    <a href="nlp.html">NLP</a>
+    <a href="autonomous.html">Car</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 3 · <strong>Pepper Robot</strong></p>
+  <header class="page-head">
+    <h1>Meet Pepper</h1>
+    <p class="sub">The humanoid you'll program with Choregraphe. Click any of the behavior blocks below — Pepper will perform them.</p>
+  </header>
+
+  <div class="lab split">
+    <div class="viz" style="min-height: 540px;">
+      <svg id="pepperSvg" viewBox="0 0 400 540" style="width: 100%; max-width: 400px;">
+        <defs>
+          <linearGradient id="pBody" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#f5f5f7"/>
+            <stop offset="1" stop-color="#d1d5db"/>
+          </linearGradient>
+          <radialGradient id="pEye" cx="0.5" cy="0.5">
+            <stop offset="0" stop-color="#fff"/>
+            <stop offset="0.6" stop-color="#00e5ff"/>
+            <stop offset="1" stop-color="#0891b2"/>
+          </radialGradient>
+        </defs>
+
+        <!-- shadow -->
+        <ellipse cx="200" cy="520" rx="90" ry="8" fill="#000" opacity="0.3"/>
+
+        <!-- base (wheels) -->
+        <path d="M 130 470 L 270 470 L 290 510 L 110 510 Z" fill="url(#pBody)" stroke="#9ca3af" stroke-width="2"/>
+        <circle cx="140" cy="505" r="10" fill="#374151"/>
+        <circle cx="200" cy="510" r="10" fill="#374151"/>
+        <circle cx="260" cy="505" r="10" fill="#374151"/>
+
+        <!-- tablet -->
+        <rect x="170" y="340" width="60" height="80" rx="6" fill="#1f2937" stroke="#9ca3af" stroke-width="1.5"/>
+        <rect x="174" y="346" width="52" height="68" fill="#00e5ff" opacity="0.8"/>
+        <text id="tabletText" x="200" y="380" text-anchor="middle" fill="#0a0e1a" font-size="9" font-family="ui-monospace">HELLO</text>
+        <text x="200" y="395" text-anchor="middle" fill="#0a0e1a" font-size="7" font-family="ui-monospace">tap me</text>
+
+        <!-- torso -->
+        <path d="M 150 240 L 250 240 L 270 470 L 130 470 Z" fill="url(#pBody)" stroke="#9ca3af" stroke-width="2"/>
+
+        <!-- arms -->
+        <g id="leftArm" style="transform-origin: 155px 250px">
+          <rect x="100" y="255" width="20" height="120" rx="10" fill="url(#pBody)" stroke="#9ca3af" stroke-width="1.5"/>
+          <circle cx="110" cy="380" r="14" fill="url(#pBody)" stroke="#9ca3af" stroke-width="1.5"/>
+        </g>
+        <g id="rightArm" style="transform-origin: 245px 250px">
+          <rect x="280" y="255" width="20" height="120" rx="10" fill="url(#pBody)" stroke="#9ca3af" stroke-width="1.5"/>
+          <circle cx="290" cy="380" r="14" fill="url(#pBody)" stroke="#9ca3af" stroke-width="1.5"/>
+        </g>
+
+        <!-- neck -->
+        <rect x="185" y="220" width="30" height="30" fill="url(#pBody)" stroke="#9ca3af" stroke-width="1.5"/>
+
+        <!-- head -->
+        <g id="pHead" style="transform-origin: 200px 175px; transition: transform 0.5s">
+          <ellipse cx="200" cy="170" rx="65" ry="75" fill="url(#pBody)" stroke="#9ca3af" stroke-width="2"/>
+          <!-- eyes -->
+          <circle id="leftEye" cx="175" cy="165" r="12" fill="url(#pEye)"/>
+          <circle id="rightEye" cx="225" cy="165" r="12" fill="url(#pEye)"/>
+          <!-- pupils -->
+          <circle id="leftPupil" cx="175" cy="165" r="4" fill="#0a0e1a"/>
+          <circle id="rightPupil" cx="225" cy="165" r="4" fill="#0a0e1a"/>
+          <!-- mouth -->
+          <path id="mouth" d="M 180 200 Q 200 205 220 200" stroke="#0a0e1a" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- ears (mics) -->
+          <ellipse cx="135" cy="170" rx="8" ry="14" fill="#9ca3af"/>
+          <ellipse cx="265" cy="170" rx="8" ry="14" fill="#9ca3af"/>
+        </g>
+
+        <!-- speech bubble -->
+        <g id="speechBubble" style="display:none">
+          <rect x="0" y="40" width="160" height="50" rx="12" fill="#7c4dff" stroke="#fff" stroke-width="2"/>
+          <path d="M 80 88 L 100 100 L 95 88 Z" fill="#7c4dff" stroke="#fff" stroke-width="2"/>
+          <text id="speechText" x="80" y="70" text-anchor="middle" fill="#fff" font-size="13" font-family="Inter">Hello!</text>
+        </g>
+      </svg>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Choregraphe-style behaviors</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem;">Click any block — Pepper executes the behavior. Real Choregraphe lets you drag these onto a timeline.</p>
+        <div class="btn-row">
+          <button class="btn-sm" data-behavior="wave">👋 Wave</button>
+          <button class="btn-sm" data-behavior="hello">💬 Say "Hello"</button>
+          <button class="btn-sm" data-behavior="look">👀 Look around</button>
+          <button class="btn-sm" data-behavior="dance">💃 Dance</button>
+          <button class="btn-sm" data-behavior="hug">🤗 Open arms</button>
+          <button class="btn-sm" data-behavior="sad">😢 Sad</button>
+          <button class="btn-sm" data-behavior="happy">😊 Happy</button>
+          <button class="btn-sm" data-behavior="reset">↻ Rest pose</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Behavior log</h3>
+        <div id="behLog" style="font-family: ui-monospace; font-size: 0.8rem; color: var(--text-dim); max-height: 200px; overflow-y: auto;">
+          <div style="color: var(--accent)">[ready] Pepper.NAOqi initialized</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Specs</h3>
+        <div class="readouts">
+          <div><span class="k">Height</span><span class="v">1.2 m</span></div>
+          <div><span class="k">Weight</span><span class="v">28 kg</span></div>
+          <div><span class="k">DOF</span><span class="v">17</span></div>
+          <div><span class="k">Battery</span><span class="v">~12 h</span></div>
+          <div><span class="k">Sensors</span><span class="v">3D, IR, sonar, touch, mic ×4</span></div>
+          <div><span class="k">OS</span><span class="v">NAOqi 2.5</span></div>
+          <div><span class="k">Programming</span><span class="v">Choregraphe / Python / C++</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>The Choregraphe pipeline</h2>
+    <p>When you drag a behavior block onto Choregraphe's timeline, this is what happens under the hood:</p>
+    <pre style="font-size: 0.85rem;">[Choregraphe GUI]
+       ↓ (generates Python)
+[NAOqi API on Pepper]
+       ↓
+[ALMotion module]  ←  set joint angles
+[ALTextToSpeech]   ←  speak phrase
+[ALTracker]        ←  follow face
+[ALMemory]         ←  state + events
+       ↓
+[Hardware: motors, speakers, microphones, cameras]</pre>
+    <p>The block-based interface is a visual programming language that emits Python. Once you're comfortable, you can drop into raw Python:</p>
+    <pre style="font-size: 0.85rem;">from naoqi import ALProxy
+tts = ALProxy("ALTextToSpeech", "pepper.local", 9559)
+tts.say("Hello, welcome to the robotics lab!")
+
+motion = ALProxy("ALMotion", "pepper.local", 9559)
+motion.setAngles("LShoulderPitch", -1.2, 0.2)</pre>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+const log = msg => {
+  const el = document.getElementById('behLog');
+  const t = new Date().toLocaleTimeString();
+  el.innerHTML += `<div><span style="color:#6b7595">[${t}]</span> ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+};
+
+const say = (text, ms = 2500) => {
+  const bubble = document.getElementById('speechBubble');
+  document.getElementById('speechText').textContent = text;
+  bubble.style.display = 'block';
+  // animate mouth
+  const mouth = document.getElementById('mouth');
+  let f = 0;
+  const mAnim = setInterval(() => {
+    f++;
+    if (f % 2) mouth.setAttribute('d', 'M 180 200 Q 200 215 220 200');
+    else mouth.setAttribute('d', 'M 180 200 Q 200 205 220 200');
+  }, 150);
+  setTimeout(() => {
+    bubble.style.display = 'none';
+    clearInterval(mAnim);
+    mouth.setAttribute('d', 'M 180 200 Q 200 205 220 200');
+  }, ms);
+};
+
+const setArm = (side, deg) => {
+  const el = document.getElementById(side + 'Arm');
+  el.style.transition = 'transform 0.6s ease';
+  el.style.transform = `rotate(${deg}deg)`;
+};
+
+const setHead = (deg) => {
+  document.getElementById('pHead').style.transform = `rotate(${deg}deg)`;
+};
+
+const setEyes = (color) => {
+  ['leftEye','rightEye'].forEach(id => document.getElementById(id).setAttribute('fill', color));
+};
+
+const setMouth = (path) => document.getElementById('mouth').setAttribute('d', path);
+
+const behaviors = {
+  wave: () => {
+    log('motion.angleInterpolation("RShoulderPitch", -1.5, 0.5)');
+    setArm('right', -120);
+    setTimeout(() => setArm('right', -90), 400);
+    setTimeout(() => setArm('right', -120), 800);
+    setTimeout(() => setArm('right', 0), 1400);
+  },
+  hello: () => {
+    log('tts.say("Hello! Welcome to the robotics lab.")');
+    say('Hello! Welcome to the robotics lab.', 3500);
+  },
+  look: () => {
+    log('motion.angleInterpolation("HeadYaw", [-0.8, 0.8, 0], [1, 2, 3])');
+    setHead(-25);
+    setTimeout(() => setHead(25), 800);
+    setTimeout(() => setHead(-15), 1600);
+    setTimeout(() => setHead(0), 2400);
+  },
+  dance: () => {
+    log('Running "happy_dance" behavior...');
+    let i = 0;
+    const seq = [
+      () => { setArm('left', -30); setArm('right', 30); setHead(15); },
+      () => { setArm('left', 30); setArm('right', -30); setHead(-15); },
+      () => { setArm('left', -60); setArm('right', 60); setHead(10); },
+      () => { setArm('left', 60); setArm('right', -60); setHead(-10); },
+      () => { setArm('left', 0); setArm('right', 0); setHead(0); }
+    ];
+    const iv = setInterval(() => {
+      seq[i]();
+      i++;
+      if (i >= seq.length) clearInterval(iv);
+    }, 400);
+  },
+  hug: () => {
+    log('motion.angleInterpolation(["LShoulderRoll", "RShoulderRoll"], [-1, 1])');
+    setArm('left', 70);
+    setArm('right', -70);
+  },
+  sad: () => {
+    log('Emotion: sad — eyes blue dim, mouth ↓');
+    setEyes('#3b82f6');
+    setMouth('M 180 210 Q 200 195 220 210');
+    document.getElementById('tabletText').textContent = ':(';
+  },
+  happy: () => {
+    log('Emotion: happy — eyes bright, mouth ↑');
+    setEyes('url(#pEye)');
+    setMouth('M 180 195 Q 200 215 220 195');
+    document.getElementById('tabletText').textContent = ':)';
+  },
+  reset: () => {
+    log('motion.goToPosture("Stand")');
+    setArm('left', 0); setArm('right', 0); setHead(0);
+    setEyes('url(#pEye)');
+    setMouth('M 180 200 Q 200 205 220 200');
+    document.getElementById('tabletText').textContent = 'HELLO';
+  }
+};
+
+document.querySelectorAll('[data-behavior]').forEach(b => {
+  b.addEventListener('click', () => behaviors[b.dataset.behavior]());
+});
+
+// Idle: random blink + pupil tracking
+setInterval(() => {
+  ['leftEye','rightEye'].forEach(id => {
+    const el = document.getElementById(id);
+    el.setAttribute('ry', '2');
+    setTimeout(() => el.setAttribute('ry', '12'), 120);
+  });
+}, 4000);
+
+// Pupils follow cursor
+document.addEventListener('mousemove', e => {
+  const svg = document.getElementById('pepperSvg');
+  const r = svg.getBoundingClientRect();
+  const dx = (e.clientX - r.left - r.width / 2) / r.width;
+  const dy = (e.clientY - r.top - r.height / 2) / r.height;
+  document.getElementById('leftPupil').setAttribute('cx', 175 + dx * 5);
+  document.getElementById('leftPupil').setAttribute('cy', 165 + dy * 4);
+  document.getElementById('rightPupil').setAttribute('cx', 225 + dx * 5);
+  document.getElementById('rightPupil').setAttribute('cy', 165 + dy * 4);
+});
+
+document.getElementById('pepperSvg').addEventListener('click', () => {
+  log('Touch sensor triggered → "hello" behavior');
+  behaviors.hello();
+});
+</script>
+</body>
+</html>
