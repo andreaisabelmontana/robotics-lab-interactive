@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Worked Example — Autonomous Raspberry Pi Line-Following Car</title>
+<meta name="description" content="A complete, in-depth worked example for IE University's Introduction to Robotics Lab: build an autonomous Raspberry Pi line-following car. Sensing with IR and camera, a PID steering controller, a follow/search/stop state machine, real Python (RPi.GPIO / OpenCV), and the full control math." />
+<link rel="stylesheet" href="css/main.css" />
+<style>
+/* ===== project.html — page-specific layout, built on top of main.css tokens ===== */
+.proj-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+/* Section anchors clear the sticky header */
+section[id], .proj-wrap [id] { scroll-margin-top: 90px; }
+
+.page-hero {
+  padding: 3rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.page-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 0.6rem; }
+.page-hero .lede { font-size: 1.15rem; color: var(--text-dim); max-width: 70ch; }
+
+/* In-page sticky sub-nav (matches course.html .toc) */
+.toc {
+  position: sticky; top: 64px; z-index: 40;
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  padding: 0.7rem 0; margin-bottom: 1.5rem;
+  background: rgba(10,14,26,0.82); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.toc a {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em;
+  color: var(--text-dim); padding: 0.3rem 0.7rem; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-elev);
+}
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+.proj-section { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+.proj-section:first-of-type { border-top: none; }
+.section-eyebrow { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.4rem; }
+.proj-section > p { color: var(--text-dim); max-width: 74ch; }
+.proj-section h3 { margin-top: 1.6rem; }
+.proj-section h4 { color: var(--text); margin: 1.2rem 0 0.4rem; font-size: 1.02rem; }
+
+/* Meta grid (reused from course.html) */
+.meta-grid { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); margin: 1.5rem 0; }
+.meta-grid .meta { padding: 1rem 1.1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
+.meta-grid .meta .k { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-mute); display: block; margin-bottom: 0.25rem; }
+.meta-grid .meta .v { color: var(--text); font-weight: 600; }
+.meta-grid .meta .v.accent { color: var(--accent); font-family: var(--mono); }
+
+/* Topic chips */
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; }
+.chip { font-family: var(--mono); font-size: 0.74rem; padding: 0.25rem 0.6rem; border-radius: 20px; background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim); }
+
+/* Hardware / bill-of-materials list */
+.hw-grid { display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin: 1.2rem 0; }
+.hw { padding: 0.9rem 1.05rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
+.hw .hw-name { color: var(--text); font-weight: 600; font-size: 0.95rem; }
+.hw .hw-role { color: var(--text-dim); font-size: 0.86rem; margin-top: 0.2rem; }
+.hw .hw-pin { font-family: var(--mono); font-size: 0.74rem; color: var(--accent); display: block; margin-top: 0.4rem; }
+
+/* Numbered step badge for the control walkthrough */
+.step { position: relative; padding-left: 3rem; margin: 1.6rem 0; }
+.step .n {
+  position: absolute; left: 0; top: 0;
+  width: 2rem; height: 2rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-weight: 700; font-size: 0.9rem; color: #0a0e1a;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+.step h4 { margin-top: 0.2rem; }
+
+/* Code blocks — scoped here as the brief allows */
+.code-head {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text-mute); background: var(--bg-elev);
+  border: 1px solid var(--border); border-bottom: none;
+  border-radius: 8px 8px 0 0; padding: 0.45rem 0.9rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.code-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.code-head + pre { margin-top: 0; border-radius: 0 0 8px 8px; }
+pre.codeblock {
+  background: #0c1120; border: 1px solid var(--border); border-radius: 8px;
+  padding: 1.1rem 1.2rem; overflow-x: auto; margin: 1.2rem 0;
+  font-family: var(--mono); font-size: 0.82rem; line-height: 1.6; color: #d6deef;
+  tab-size: 4;
+}
+pre.codeblock code { background: none; padding: 0; font-size: inherit; color: inherit; border-radius: 0; }
+.cmt { color: #6b7595; font-style: italic; }
+.kw  { color: #7c9cff; }
+.str { color: #8be9b0; }
+.fn  { color: #00e5ff; }
+.num { color: #ff9d6b; }
+.cls { color: #c7a0ff; }
+
+/* Math block */
+.math {
+  background: rgba(124,77,255,0.07); border: 1px solid rgba(124,77,255,0.25);
+  border-radius: 10px; padding: 1.1rem 1.3rem; margin: 1.2rem 0;
+  font-family: var(--mono); font-size: 0.92rem; color: var(--text); overflow-x: auto;
+}
+.math .lbl { display: block; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 0.5rem; }
+.math .eq { color: var(--accent); }
+.math p { color: var(--text-dim); font-family: var(--sans); font-size: 0.88rem; margin: 0.6rem 0 0; }
+
+/* ASCII / described diagram block */
+.diagram {
+  background: #0c1120; border: 1px solid var(--border); border-radius: 10px;
+  padding: 1.2rem; margin: 1.2rem 0; overflow-x: auto;
+  font-family: var(--mono); font-size: 0.78rem; line-height: 1.5; color: var(--text-dim);
+  white-space: pre;
+}
+.diagram b { color: var(--accent); font-weight: 600; }
+
+/* Tables (results, PID tuning, learning-outcome map) */
+.tbl-wrap { overflow-x: auto; margin: 1.3rem 0; }
+table.data { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 560px; }
+table.data th, table.data td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.data thead th { color: var(--accent); font-family: var(--mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; background: var(--bg-elev); }
+table.data tbody tr:hover { background: rgba(0,229,255,0.03); }
+table.data td.mono, table.data th.mono { font-family: var(--mono); color: var(--text); }
+table.data td .ok { color: var(--good); }
+table.data td .warn { color: var(--warn); }
+table.data td .bad { color: var(--bad); }
+
+/* Outcome list (reused from course.html .obj-list) */
+.obj-list { list-style: none; padding: 0; margin: 1.2rem 0; display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); }
+.obj-list li {
+  padding: 1rem 1.1rem 1rem 2.6rem; position: relative;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text-dim); font-size: 0.92rem;
+}
+.obj-list li::before { content: "\2713"; position: absolute; left: 1rem; top: 1rem; color: var(--accent); font-weight: 700; }
+.obj-list li strong { color: var(--text); display: block; margin-bottom: 0.15rem; }
+
+/* Demo cross-links (matches course.html .demo-link) */
+.demo-link {
+  display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.5rem 0.5rem 0 0;
+  font-family: var(--mono); font-size: 0.8rem; padding: 0.4rem 0.8rem;
+  border-radius: 6px; border: 1px solid rgba(0,229,255,0.3); background: rgba(0,229,255,0.06); color: var(--accent);
+}
+.demo-link:hover { border-color: var(--accent); background: rgba(0,229,255,0.12); color: var(--accent); }
+.link-row { margin: 1.2rem 0 0.4rem; }
+
+/* Extension cards */
+.ext-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin: 1.4rem 0; }
+.ext { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; position: relative; overflow: hidden; }
+.ext h4 { margin: 0 0 0.4rem; color: var(--accent); font-size: 0.98rem; }
+.ext p { color: var(--text-dim); font-size: 0.88rem; margin: 0; }
+.ext::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 100% 0%, rgba(124,77,255,0.08), transparent 55%); pointer-events: none; }
+
+/* References */
+.ref-list { display: grid; gap: 0.8rem; margin-top: 1.2rem; }
+.ref-item { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 1rem 1.2rem; }
+.ref-item .cite { color: var(--text-mute); font-size: 0.84rem; font-family: var(--mono); }
+.ref-item p { color: var(--text-dim); font-size: 0.9rem; margin: 0.4rem 0 0; }
+
+.proj-section ul.plain { color: var(--text-dim); font-size: 0.94rem; padding-left: 1.2rem; }
+.proj-section ul.plain li { margin: 0.3rem 0; }
+.proj-section ul.plain code, .proj-section p code { color: var(--accent); }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="./index.html"><span class="logo">&#9670;</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="./index.html">Demos</a>
+    <a href="./course.html">Course outline</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#control">PID control</a>
+    <a href="#state-machine">State machine</a>
+    <a href="#results">Results</a>
+    <a href="./SYLLABUS.pdf" target="_blank" rel="noopener">PDF &#8599;</a>
+  </nav>
+</header>
+
+<main class="proj-wrap">
+  <p class="crumb"><a href="./index.html">Home</a> &middot; <a href="./course.html">Course structure</a> &middot; <strong>Worked example project</strong></p>
+
+  <section class="page-hero">
+    <p class="eyebrow">IE University &middot; IRL-N3CSAI &middot; Module 4 capstone &middot; Worked example</p>
+    <h1>Autonomous Raspberry&nbsp;Pi <em>line-following car</em></h1>
+    <p class="lede">One end-to-end build that ties the whole course together. We wire IR and camera sensors to a Raspberry&nbsp;Pi, read them over GPIO, drive two DC motors through an L298N H-bridge with PWM, and close the loop with a <strong>PID steering controller</strong> wrapped in a small <strong>follow&nbsp;/&nbsp;search&nbsp;/&nbsp;stop state machine</strong>. Every section pairs the reasoning with real, runnable Python and the control math behind it.</p>
+  </section>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#overview">01 Overview</a>
+    <a href="#architecture">02 Architecture</a>
+    <a href="#sensing">03 Sensing</a>
+    <a href="#control">04 PID control</a>
+    <a href="#state-machine">05 State machine</a>
+    <a href="#results">06 Results</a>
+    <a href="#outcomes">07 Outcomes</a>
+    <a href="#extensions">08 Extensions</a>
+    <a href="#references">09 References</a>
+  </nav>
+
+  <!-- ===================== 01 OVERVIEW ===================== -->
+  <section class="proj-section" id="overview">
+    <span class="section-eyebrow">01 &middot; Overview</span>
+    <h2>The goal, the stack, and what we build</h2>
+    <p>The <strong>goal</strong> is a small car that drives itself along a black line taped to the floor: it stays centred on the line, slows for curves, hunts for the line if it loses it, and stops cleanly at the end. This is the reactive-autonomy core of the Module&nbsp;4 capstone &mdash; the same sense&ndash;think&ndash;act loop introduced in Session&nbsp;1, now running tens of times a second on real hardware. The car is deliberately built from the cheapest reliable parts so the engineering lives in the <em>software and tuning</em>, not the bill of materials.</p>
+
+    <h3>Sessions this project exercises</h3>
+    <p>The worked example is the integration point for almost every session of the course:</p>
+    <div class="chips">
+      <span class="chip">S1 Sense&ndash;think&ndash;act loop</span>
+      <span class="chip">S4 Sensors &amp; actuators</span>
+      <span class="chip">S5 PID control</span>
+      <span class="chip">S9 Raspberry Pi &amp; GPIO</span>
+      <span class="chip">S10 PWM &amp; H-bridge</span>
+      <span class="chip">S11 Vision in the control loop</span>
+      <span class="chip">S12 Autonomous navigation</span>
+      <span class="chip">S13 Testing &amp; debugging</span>
+      <span class="chip">S14 Tuning for performance</span>
+    </div>
+
+    <h3>Stack</h3>
+    <div class="meta-grid">
+      <div class="meta"><span class="k">Computer</span><span class="v accent">Raspberry Pi</span></div>
+      <div class="meta"><span class="k">Language</span><span class="v accent">Python 3</span></div>
+      <div class="meta"><span class="k">GPIO</span><span class="v">RPi.GPIO</span></div>
+      <div class="meta"><span class="k">Vision</span><span class="v">picamera2 + OpenCV</span></div>
+      <div class="meta"><span class="k">Motor driver</span><span class="v">L298N H-bridge</span></div>
+      <div class="meta"><span class="k">Control</span><span class="v">PID + state machine</span></div>
+      <div class="meta"><span class="k">Loop rate</span><span class="v accent">~50 Hz</span></div>
+      <div class="meta"><span class="k">Drive</span><span class="v">Differential (2 wheels)</span></div>
+    </div>
+
+    <h3>Hardware list</h3>
+    <p>Everything connects to a single Raspberry&nbsp;Pi using BCM pin numbering. Motor power comes from a separate battery pack &mdash; the Pi supplies only logic-level signals (Session&nbsp;10 safety rule).</p>
+    <div class="hw-grid">
+      <div class="hw"><div class="hw-name">Raspberry Pi (4B / Zero 2 W)</div><div class="hw-role">The car's brain &mdash; runs Linux, Python, the control loop and OpenCV.</div></div>
+      <div class="hw"><div class="hw-name">5-channel IR line array</div><div class="hw-role">Digital reflectance sensors across the chassis floor; the primary line detector.</div><span class="hw-pin">GPIO 5, 6, 13, 19, 26 (in)</span></div>
+      <div class="hw"><div class="hw-name">Pi Camera Module</div><div class="hw-role">Optional richer line detection &amp; curvature look-ahead via OpenCV.</div><span class="hw-pin">CSI ribbon</span></div>
+      <div class="hw"><div class="hw-name">L298N motor driver</div><div class="hw-role">Dual H-bridge: turns logic signals into motor direction + speed.</div><span class="hw-pin">IN1 17, IN2 27, IN3 22, IN4 23</span></div>
+      <div class="hw"><div class="hw-name">2&times; DC gear motors + wheels</div><div class="hw-role">Differential drive &mdash; steering is a speed difference between left and right.</div><span class="hw-pin">ENA 18 (PWM), ENB 12 (PWM)</span></div>
+      <div class="hw"><div class="hw-name">HC-SR04 ultrasonic (optional)</div><div class="hw-role">Front rangefinder for the stop / obstacle extension.</div><span class="hw-pin">TRIG 20, ECHO 21</span></div>
+      <div class="hw"><div class="hw-name">Battery pack + buck converter</div><div class="hw-role">Separate motor supply (6&ndash;9&nbsp;V); common ground with the Pi.</div></div>
+    </div>
+
+    <div class="callout"><p><strong>Why line-following first.</strong> Line-following is the gentlest possible introduction to closed-loop autonomy: the error signal is one number (how far off-centre we are), the controller is a textbook PID, and the actuator mapping is a simple differential mix. Master it here and obstacle avoidance, vision steering, and ROS navigation are all variations on the same loop.</p></div>
+
+    <div class="link-row">
+      <a class="demo-link" href="./pages/raspi-car.html">&#9654; Demo: Interactive GPIO pinout</a>
+      <a class="demo-link" href="./pages/autonomous.html">&#9654; Demo: Drive the autonomous car</a>
+      <a class="demo-link" href="./course.html#module-4">&#9654; Course: Module 4 sessions</a>
+    </div>
+  </section>
+
+  <!-- ===================== 02 ARCHITECTURE ===================== -->
+  <section class="proj-section" id="architecture">
+    <span class="section-eyebrow">02 &middot; System architecture</span>
+    <h2>Sensors &rarr; controller &rarr; actuators</h2>
+    <p>The car is a textbook sense&ndash;think&ndash;act pipeline. Each loop iteration the <em>sense</em> stage reads the IR array (and optionally a camera frame) and reduces it to a single <strong>line-position error</strong>; the <em>think</em> stage runs that error through a PID controller and a state machine to decide a steering correction and a base speed; the <em>act</em> stage mixes those into left/right motor duty cycles and writes them to the L298N over PWM.</p>
+
+    <div class="diagram"><b>SENSE</b>                         <b>THINK</b>                          <b>ACT</b>
+ IR array (5 ch) ─┐                                            ┌─ ENA/PWM ─ Left motor
+                  ├─&gt; line error e ─&gt; [ State machine ]         │
+ Pi camera ───────┘        (px)          FOLLOW / SEARCH / STOP │   L298N
+                                              │                 │  H-bridge
+                                              v                 │
+                                       [ PID controller ]       ├─ ENB/PWM ─ Right motor
+                                         u = Kp·e + Ki·∫e        │
+                                             + Kd·de/dt          │
+                                              │                  │
+                                   base_speed ± u  ─ differential mix ─&gt; (duty_L, duty_R)
+                                              │
+                                   loop @ ~50 Hz (20 ms) ────────┘  (repeat)</div>
+
+    <h3>Wiring</h3>
+    <p>The Pi never drives a motor directly &mdash; its 3.3&nbsp;V GPIO can't source the current (Session&nbsp;9/10). Instead, four direction pins and two PWM "enable" pins command the L298N, which switches the separate motor battery. Sensors share a common ground with the Pi.</p>
+    <div class="diagram"><b>Raspberry Pi (BCM)</b>                 <b>L298N driver</b>            <b>Motors</b>
+  GPIO17 ───────────────────────&gt; IN1  ┐
+  GPIO27 ───────────────────────&gt; IN2  ├─&gt; OUT1/OUT2 ─────&gt; Left  DC motor
+  GPIO18 (PWM, ENA) ─────────────&gt; ENA  ┘
+  GPIO22 ───────────────────────&gt; IN3  ┐
+  GPIO23 ───────────────────────&gt; IN4  ├─&gt; OUT3/OUT4 ─────&gt; Right DC motor
+  GPIO12 (PWM, ENB) ─────────────&gt; ENB  ┘
+  GND ──────────────┬────────────&gt; GND  (common ground &mdash; required!)
+                    └──────────── battery (&minus;)
+  Battery pack (6&ndash;9 V +) ─────────&gt; +12V / VS   (motor supply, NOT from the Pi)
+
+  IR array  ──&gt; GPIO 5,6,13,19,26 (digital in)   + 3V3 + GND
+  HC-SR04   ──&gt; TRIG GPIO20, ECHO GPIO21 (via voltage divider on ECHO)</div>
+    <div class="callout"><p><strong>Safety.</strong> Always tie the Pi ground to the L298N ground, never back-feed motor voltage into a GPIO pin, and drop the 5&nbsp;V HC-SR04 echo to 3.3&nbsp;V with a divider. Getting this wrong is the fastest way to brown-out or kill a Pi.</p></div>
+
+    <div class="link-row">
+      <a class="demo-link" href="./pages/raspi-car.html">&#9654; Demo: Plan the pins on the GPIO pinout</a>
+      <a class="demo-link" href="./pages/sensors.html">&#9654; Demo: Sensor simulators</a>
+      <a class="demo-link" href="./pages/actuators.html">&#9654; Demo: Drives &amp; gearboxes</a>
+    </div>
+  </section>
+
+  <!-- ===================== 03 SENSING ===================== -->
+  <section class="proj-section" id="sensing">
+    <span class="section-eyebrow">03 &middot; Sensing</span>
+    <h2>Detecting the line</h2>
+    <p>The whole controller acts on one number: <strong>the line's offset from centre</strong>, in the same units every cycle. We compute it two ways &mdash; a fast IR array (primary) and an OpenCV camera fallback (richer, used for the vision extension) &mdash; and both return an error <code>e</code> where <code>e = 0</code> means perfectly centred, positive means the line is to the right, negative to the left.</p>
+
+    <h4>IR reflectance array</h4>
+    <p>Five IR sensors sit in a row under the nose of the car. Each reads <code>1</code> over the dark line and <code>0</code> over the light floor (after calibrating the threshold to the real surface &mdash; Session&nbsp;13). We assign each channel a fixed position weight and take the weighted average of the channels that see the line. With weights <code>[-2, -1, 0, +1, +2]</code>, an all-centre reading gives <code>0</code>; the line drifting under the rightmost sensor gives <code>+2</code>.</p>
+
+    <div class="code-head"><span class="dot"></span>sensors.py &mdash; IR line array</div>
+    <pre class="codeblock"><code><span class="kw">import</span> RPi.GPIO <span class="kw">as</span> GPIO
+
+IR_PINS    = [<span class="num">5</span>, <span class="num">6</span>, <span class="num">13</span>, <span class="num">19</span>, <span class="num">26</span>]   <span class="cmt"># left -&gt; right, BCM numbering</span>
+IR_WEIGHTS = [<span class="num">-2</span>, <span class="num">-1</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>]    <span class="cmt"># position of each channel</span>
+
+<span class="kw">def</span> <span class="fn">setup_ir</span>():
+    GPIO.setmode(GPIO.BCM)
+    <span class="kw">for</span> pin <span class="kw">in</span> IR_PINS:
+        GPIO.setup(pin, GPIO.IN)
+
+<span class="kw">def</span> <span class="fn">read_line_error</span>():
+    <span class="str">"""Return (error, on_line). error in [-2, +2]; 0 = centred."""</span>
+    bits = [GPIO.input(pin) <span class="kw">for</span> pin <span class="kw">in</span> IR_PINS]   <span class="cmt"># 1 = sees dark line</span>
+    active = sum(bits)
+    <span class="kw">if</span> active == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="num">0.0</span>, <span class="kw">False</span>                         <span class="cmt"># line lost</span>
+    weighted = sum(w * b <span class="kw">for</span> w, b <span class="kw">in</span> zip(IR_WEIGHTS, bits))
+    <span class="kw">return</span> weighted / active, <span class="kw">True</span>             <span class="cmt"># centre of mass of the line</span></code></pre>
+
+    <div class="callout"><p><strong>Why a weighted centre-of-mass?</strong> Two adjacent channels firing (the line straddling them) averages to a half-step like <code>+0.5</code>, giving the controller a smooth, sub-sensor-resolution error instead of a coarse 5-level jump. That smoothness is what lets the PID steer gently rather than wobble.</p></div>
+
+    <h4>Camera fallback (OpenCV)</h4>
+    <p>For the vision extension we grab a frame, crop a thin <em>region of interest</em> near the front of the car, threshold it to isolate the dark line, and take the centroid of the line pixels. The error is the centroid's horizontal offset from the frame centre, in pixels &mdash; the exact "reduce a rich image to one number" pattern from Session&nbsp;11. We keep the ROI small so the loop stays fast.</p>
+
+    <div class="code-head"><span class="dot"></span>vision.py &mdash; OpenCV line centroid</div>
+    <pre class="codeblock"><code><span class="kw">import</span> cv2
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> picamera2 <span class="kw">import</span> Picamera2
+
+cam = Picamera2()
+cam.configure(cam.create_preview_configuration(main={<span class="str">"size"</span>: (<span class="num">320</span>, <span class="num">240</span>)}))
+cam.start()
+
+<span class="kw">def</span> <span class="fn">read_line_error_cv</span>():
+    <span class="str">"""Return (error_px, on_line). error_px &gt; 0 means line is to the right."""</span>
+    frame = cam.capture_array()                 <span class="cmt"># RGB, 320x240</span>
+    gray  = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+    roi   = gray[<span class="num">180</span>:<span class="num">210</span>, :]                    <span class="cmt"># thin strip near the front</span>
+
+    <span class="cmt"># dark line on light floor -&gt; invert so the line is white</span>
+    _, mask = cv2.threshold(roi, <span class="num">70</span>, <span class="num">255</span>,
+                            cv2.THRESH_BINARY_INV)
+    M = cv2.moments(mask)
+    <span class="kw">if</span> M[<span class="str">"m00"</span>] == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="num">0.0</span>, <span class="kw">False</span>                       <span class="cmt"># no line pixels -&gt; lost</span>
+
+    cx = M[<span class="str">"m10"</span>] / M[<span class="str">"m00"</span>]                  <span class="cmt"># centroid x (px)</span>
+    frame_center = roi.shape[<span class="num">1</span>] / <span class="num">2.0</span>          <span class="cmt"># 160 px</span>
+    <span class="kw">return</span> cx - frame_center, <span class="kw">True</span>           <span class="cmt"># offset from centre</span></code></pre>
+
+    <div class="link-row">
+      <a class="demo-link" href="./pages/sensors.html">&#9654; Demo: IR line-follower simulator</a>
+      <a class="demo-link" href="./pages/control.html">&#9654; Demo: See error drive a controller</a>
+    </div>
+  </section>
+
+  <!-- ===================== 04 CONTROL ===================== -->
+  <section class="proj-section" id="control">
+    <span class="section-eyebrow">04 &middot; Control</span>
+    <h2>The PID steering controller</h2>
+    <p>The line error tells us <em>how wrong</em> we are; the controller decides <em>what to do about it</em>. A PID controller (Session&nbsp;5) computes a single steering correction <code>u</code> from the error, and we mix that correction into the two motor speeds to turn the car back toward the line.</p>
+
+    <div class="math">
+      <span class="lbl">The PID control law</span>
+      <span class="eq">u(t) = Kp&middot;e(t) + Ki&middot;&int; e(t) dt + Kd&middot; de(t)/dt</span>
+      <p><strong>P</strong> &mdash; <em>proportional</em>: reacts to the present error. Bigger offset &rarr; harder correction. Too much alone overshoots and oscillates.</p>
+      <p><strong>I</strong> &mdash; <em>integral</em>: accumulates past error to erase a steady bias (e.g. a slightly stronger left motor). Too much causes <em>integral windup</em> and a late overshoot.</p>
+      <p><strong>D</strong> &mdash; <em>derivative</em>: reacts to how fast the error is changing, damping the overshoot the P term creates. Too much amplifies sensor noise into jitter.</p>
+    </div>
+
+    <p>In software the loop runs at discrete steps of length <code>dt</code> (here ~20&nbsp;ms, so ~50&nbsp;Hz), so the integral becomes a running sum and the derivative a finite difference:</p>
+    <div class="math">
+      <span class="lbl">Discrete form (per loop step)</span>
+      <span class="eq">integral &larr; integral + e &middot; dt</span>
+      <span class="eq">derivative = (e &minus; e_prev) / dt</span>
+      <span class="eq">u = Kp&middot;e + Ki&middot;integral + Kd&middot;derivative</span>
+    </div>
+
+    <h3>Building it step by step</h3>
+
+    <div class="step">
+      <span class="n">1</span>
+      <h4>A reusable PID class with anti-windup</h4>
+      <p>We clamp the accumulated integral so it can't grow without bound while the motors are saturated &mdash; the standard fix for the windup pitfall flagged in Session&nbsp;5.</p>
+    </div>
+    <div class="code-head"><span class="dot"></span>pid.py &mdash; discrete PID with anti-windup</div>
+    <pre class="codeblock"><code><span class="kw">import</span> time
+
+<span class="kw">class</span> <span class="cls">PID</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, kp, ki, kd, out_limit=<span class="num">100.0</span>, i_limit=<span class="num">40.0</span>):
+        self.kp, self.ki, self.kd = kp, ki, kd
+        self.out_limit = out_limit      <span class="cmt"># clamp on the final output</span>
+        self.i_limit   = i_limit        <span class="cmt"># clamp on the integral (anti-windup)</span>
+        self.integral  = <span class="num">0.0</span>
+        self.prev_e    = <span class="num">0.0</span>
+        self.prev_t    = time.monotonic()
+
+    <span class="kw">def</span> <span class="fn">reset</span>(self):
+        self.integral = <span class="num">0.0</span>
+        self.prev_e   = <span class="num">0.0</span>
+        self.prev_t   = time.monotonic()
+
+    <span class="kw">def</span> <span class="fn">update</span>(self, error):
+        now = time.monotonic()
+        dt  = max(now - self.prev_t, <span class="num">1e-3</span>)   <span class="cmt"># guard against dt = 0</span>
+
+        <span class="cmt"># proportional</span>
+        p = self.kp * error
+
+        <span class="cmt"># integral, clamped to stop windup</span>
+        self.integral += error * dt
+        self.integral = max(-self.i_limit, min(self.i_limit, self.integral))
+        i = self.ki * self.integral
+
+        <span class="cmt"># derivative on the error</span>
+        d = self.kd * (error - self.prev_e) / dt
+
+        u = p + i + d
+        u = max(-self.out_limit, min(self.out_limit, u))   <span class="cmt"># clamp output</span>
+
+        self.prev_e = error
+        self.prev_t = now
+        <span class="kw">return</span> u</code></pre>
+
+    <div class="step">
+      <span class="n">2</span>
+      <h4>Mix the correction into the two motors</h4>
+      <p>With a differential drive, steering <em>is</em> a speed difference (Session&nbsp;5). We start both wheels at a base speed, then add the PID output to one side and subtract it from the other. A positive <code>u</code> (line is to the right) speeds the left wheel and slows the right, swinging the nose right toward the line.</p>
+    </div>
+    <div class="code-head"><span class="dot"></span>drive.py &mdash; differential mix &amp; PWM output</div>
+    <pre class="codeblock"><code><span class="kw">import</span> RPi.GPIO <span class="kw">as</span> GPIO
+
+IN1, IN2, ENA = <span class="num">17</span>, <span class="num">27</span>, <span class="num">18</span>      <span class="cmt"># left motor</span>
+IN3, IN4, ENB = <span class="num">22</span>, <span class="num">23</span>, <span class="num">12</span>      <span class="cmt"># right motor</span>
+PWM_HZ        = <span class="num">1000</span>                <span class="cmt"># 1 kHz switching</span>
+DEADBAND      = <span class="num">18.0</span>                <span class="cmt"># min duty that actually turns the wheel</span>
+
+<span class="kw">def</span> <span class="fn">setup_motors</span>():
+    GPIO.setmode(GPIO.BCM)
+    <span class="kw">for</span> p <span class="kw">in</span> (IN1, IN2, IN3, IN4, ENA, ENB):
+        GPIO.setup(p, GPIO.OUT)
+    left  = GPIO.PWM(ENA, PWM_HZ); left.start(<span class="num">0</span>)
+    right = GPIO.PWM(ENB, PWM_HZ); right.start(<span class="num">0</span>)
+    <span class="kw">return</span> left, right
+
+<span class="kw">def</span> <span class="fn">_clamp_duty</span>(duty):
+    duty = max(<span class="num">0.0</span>, min(<span class="num">100.0</span>, duty))
+    <span class="cmt"># jump over the deadband so a small command still moves the wheel</span>
+    <span class="kw">return</span> <span class="num">0.0</span> <span class="kw">if</span> duty &lt; <span class="num">1.0</span> <span class="kw">else</span> DEADBAND + duty * (<span class="num">100</span> - DEADBAND) / <span class="num">100</span>
+
+<span class="kw">def</span> <span class="fn">drive</span>(left_pwm, right_pwm, base, u):
+    <span class="str">"""base = forward speed (0-100); u = PID steering correction."""</span>
+    duty_l = _clamp_duty(base + u)        <span class="cmt"># u &gt; 0 -&gt; steer right</span>
+    duty_r = _clamp_duty(base - u)
+
+    <span class="cmt"># both wheels forward (set direction pins once)</span>
+    GPIO.output(IN1, GPIO.HIGH); GPIO.output(IN2, GPIO.LOW)
+    GPIO.output(IN3, GPIO.HIGH); GPIO.output(IN4, GPIO.LOW)
+    left_pwm.ChangeDutyCycle(duty_l)
+    right_pwm.ChangeDutyCycle(duty_r)</code></pre>
+
+    <div class="math">
+      <span class="lbl">PWM duty &rarr; motor speed</span>
+      <span class="eq">V_avg = duty &times; V_supply</span>
+      <p>Pulse-width modulation switches the enable pin on/off at 1&nbsp;kHz; the duty cycle sets the average voltage. <strong>Worked example:</strong> 75% duty on a 6&nbsp;V pack delivers &asymp;4.5&nbsp;V average, so the motor runs at roughly three-quarter speed. Below the deadband duty (&asymp;18% here) static friction wins and the wheel only buzzes &mdash; so <code>_clamp_duty</code> maps any non-zero command above that floor (Session&nbsp;10).</p>
+    </div>
+
+    <div class="link-row">
+      <a class="demo-link" href="./pages/control.html">&#9654; Demo: Live PID tuner (slide Kp/Ki/Kd)</a>
+      <a class="demo-link" href="./course.html#module-2">&#9654; Course: Control systems (S5)</a>
+    </div>
+  </section>
+
+  <!-- ===================== 05 STATE MACHINE ===================== -->
+  <section class="proj-section" id="state-machine">
+    <span class="section-eyebrow">05 &middot; Decision logic</span>
+    <h2>The state machine &amp; main loop</h2>
+    <p>A pure PID line-follower has one fatal flaw: the moment the line disappears (a gap, a sharp corner, the end of the track) the error reads <code>0</code> and the car sails straight off. The fix from Session&nbsp;12 is to add <em>a little state</em>. We wrap the controller in a three-state machine:</p>
+    <ul class="plain">
+      <li><strong><code>FOLLOW</code></strong> &mdash; line is visible: run the PID and drive at base speed (reduced on tight curves).</li>
+      <li><strong><code>SEARCH</code></strong> &mdash; line just lost: stop driving forward and pivot toward the side the line was last seen, for up to a timeout. Find it &rarr; back to <code>FOLLOW</code>; timeout &rarr; <code>STOP</code>.</li>
+      <li><strong><code>STOP</code></strong> &mdash; line gone for good (or an obstacle/end detected): cut the motors and hold.</li>
+    </ul>
+
+    <div class="diagram">              line seen
+        ┌───────────────────────────────┐
+        v                               │
+   ┌─────────┐   line lost   ┌─────────┐   line found   (back to)
+   │ FOLLOW  │ ────────────&gt; │ SEARCH  │ ─────────────&gt;  FOLLOW
+   │ run PID │               │ pivot   │
+   └─────────┘               └─────────┘
+        │                         │ search timeout
+        │ end / obstacle          v
+        └───────────────────&gt; ┌─────────┐
+                              │  STOP   │  motors = 0
+                              └─────────┘</div>
+
+    <div class="code-head"><span class="dot"></span>main.py &mdash; state machine + 50 Hz control loop</div>
+    <pre class="codeblock"><code><span class="kw">import</span> time
+<span class="kw">import</span> RPi.GPIO <span class="kw">as</span> GPIO
+<span class="kw">from</span> pid     <span class="kw">import</span> PID
+<span class="kw">from</span> sensors <span class="kw">import</span> setup_ir, read_line_error
+<span class="kw">from</span> drive   <span class="kw">import</span> setup_motors, drive
+
+<span class="cmt"># --- tuned constants (see the results table) ---</span>
+KP, KI, KD   = <span class="num">22.0</span>, <span class="num">0.4</span>, <span class="num">9.0</span>
+BASE_SPEED   = <span class="num">55.0</span>          <span class="cmt"># forward duty on a straight</span>
+CURVE_SLOW   = <span class="num">0.6</span>           <span class="cmt"># speed multiplier when |error| is large</span>
+LOOP_DT      = <span class="num">0.02</span>          <span class="cmt"># 20 ms -&gt; ~50 Hz</span>
+SEARCH_TIME  = <span class="num">1.5</span>           <span class="cmt"># seconds to hunt before giving up</span>
+SEARCH_TURN  = <span class="num">45.0</span>          <span class="cmt"># pivot duty while searching</span>
+
+FOLLOW, SEARCH, STOP = <span class="str">"FOLLOW"</span>, <span class="str">"SEARCH"</span>, <span class="str">"STOP"</span>
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    setup_ir()
+    left, right = setup_motors()
+    pid = PID(KP, KI, KD)
+
+    state          = FOLLOW
+    last_dir       = <span class="num">1.0</span>     <span class="cmt"># +1 line was last to the right, -1 to the left</span>
+    search_started = <span class="num">0.0</span>
+
+    <span class="kw">try</span>:
+        <span class="kw">while</span> <span class="kw">True</span>:
+            t0 = time.monotonic()
+            error, on_line = read_line_error()
+
+            <span class="cmt"># ---- THINK: state transitions ----</span>
+            <span class="kw">if</span> state == FOLLOW:
+                <span class="kw">if</span> on_line:
+                    last_dir = <span class="num">1.0</span> <span class="kw">if</span> error &gt;= <span class="num">0</span> <span class="kw">else</span> <span class="num">-1.0</span>
+                <span class="kw">else</span>:
+                    state, search_started = SEARCH, t0
+                    pid.reset()                 <span class="cmt"># drop stale integral</span>
+
+            <span class="kw">elif</span> state == SEARCH:
+                <span class="kw">if</span> on_line:
+                    state = FOLLOW
+                <span class="kw">elif</span> t0 - search_started &gt; SEARCH_TIME:
+                    state = STOP
+
+            <span class="cmt"># ---- ACT ----</span>
+            <span class="kw">if</span> state == FOLLOW:
+                u     = pid.update(error)
+                speed = BASE_SPEED * (CURVE_SLOW <span class="kw">if</span> abs(error) &gt; <span class="num">1.0</span> <span class="kw">else</span> <span class="num">1.0</span>)
+                drive(left, right, speed, u)
+            <span class="kw">elif</span> state == SEARCH:
+                <span class="cmt"># pivot in place toward where the line vanished</span>
+                drive(left, right, <span class="num">0.0</span>, last_dir * SEARCH_TURN)
+            <span class="kw">else</span>:  <span class="cmt"># STOP</span>
+                drive(left, right, <span class="num">0.0</span>, <span class="num">0.0</span>)
+                <span class="kw">break</span>
+
+            <span class="cmt"># ---- keep a steady loop rate ----</span>
+            time.sleep(max(<span class="num">0.0</span>, LOOP_DT - (time.monotonic() - t0)))
+    <span class="kw">finally</span>:
+        GPIO.cleanup()                          <span class="cmt"># always release the pins</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    main()</code></pre>
+
+    <div class="callout"><p><strong>Three details that matter.</strong> (1) We <code>pid.reset()</code> on entering <code>SEARCH</code> so a stale integral doesn't yank the car when the line returns. (2) The fixed <code>LOOP_DT</code> sleep keeps <code>dt</code> roughly constant, which keeps the integral and derivative terms meaningful. (3) <code>GPIO.cleanup()</code> in a <code>finally</code> block guarantees the motors stop even if the program crashes &mdash; a safety habit from Session&nbsp;13.</p></div>
+
+    <div class="link-row">
+      <a class="demo-link" href="./pages/autonomous.html">&#9654; Demo: Watch the state machine drive</a>
+      <a class="demo-link" href="./course.html#module-4">&#9654; Course: Autonomous navigation (S12)</a>
+    </div>
+  </section>
+
+  <!-- ===================== 06 RESULTS ===================== -->
+  <section class="proj-section" id="results">
+    <span class="section-eyebrow">06 &middot; Results</span>
+    <h2>Behaviour &amp; tuning</h2>
+    <p>With the tuned gains above (<code>Kp=22, Ki=0.4, Kd=9</code>) the car tracks a 2&nbsp;cm line at &asymp;0.3&nbsp;m/s, holds the centre to within one sensor width on straights, slows automatically into curves, and recovers from a lost line by pivoting back onto it. The behaviour we observed across runs:</p>
+    <ul class="plain">
+      <li><strong>Straights:</strong> near-zero steering output, the car runs at full <code>BASE_SPEED</code>.</li>
+      <li><strong>Gentle curves:</strong> proportional term steers smoothly; derivative term prevents overshoot at the curve exit.</li>
+      <li><strong>Sharp corners:</strong> <code>CURVE_SLOW</code> drops the speed so the IR array doesn't skip past the line between samples.</li>
+      <li><strong>Gaps / line end:</strong> <code>SEARCH</code> pivots toward the last-seen side; re-acquires small gaps, stops cleanly at the real end.</li>
+    </ul>
+
+    <h3>PID tuning table</h3>
+    <p>How we got there &mdash; the classic "raise Kp until it oscillates, add Kd to damp, add just enough Ki" procedure from Session&nbsp;5, recorded run by run:</p>
+    <div class="tbl-wrap">
+    <table class="data">
+      <thead><tr><th class="mono">Kp</th><th class="mono">Ki</th><th class="mono">Kd</th><th>Observed behaviour</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">5</td><td class="mono">0</td><td class="mono">0</td><td>Sluggish; drifts off on any curve, never really centres.</td><td><span class="bad">Too soft</span></td></tr>
+        <tr><td class="mono">15</td><td class="mono">0</td><td class="mono">0</td><td>Follows straights, but overshoots and weaves (S-ing) on curves.</td><td><span class="warn">P too high alone</span></td></tr>
+        <tr><td class="mono">30</td><td class="mono">0</td><td class="mono">0</td><td>Fast reaction but sustained oscillation &mdash; visibly unstable.</td><td><span class="bad">Oscillates</span></td></tr>
+        <tr><td class="mono">22</td><td class="mono">0</td><td class="mono">6</td><td>Derivative damps the weave; smooth on curves, slight residual bias.</td><td><span class="warn">Almost</span></td></tr>
+        <tr><td class="mono">22</td><td class="mono">0</td><td class="mono">9</td><td>Crisp, well-damped tracking; tiny steady drift on long arcs.</td><td><span class="warn">Add I</span></td></tr>
+        <tr><td class="mono">22</td><td class="mono">0.4</td><td class="mono">9</td><td>Steady drift gone; centres precisely, recovers cleanly.</td><td><span class="ok">Tuned &#10003;</span></td></tr>
+        <tr><td class="mono">22</td><td class="mono">2.0</td><td class="mono">9</td><td>Integral windup &mdash; late overshoot after a long curve.</td><td><span class="bad">I too high</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="callout"><p><strong>Reading the table.</strong> P alone trades sluggishness for oscillation; D buys back the stability so you can keep P high; a small I erases the last steady-state offset without inducing windup. This is exactly the intuition the <a href="./pages/control.html">live PID tuner demo</a> lets you feel by sliding the gains.</p></div>
+  </section>
+
+  <!-- ===================== 07 OUTCOMES ===================== -->
+  <section class="proj-section" id="outcomes">
+    <span class="section-eyebrow">07 &middot; Learning outcomes</span>
+    <h2>Mapping to course outcomes</h2>
+    <p>This single build hits the Module&nbsp;4 learning outcomes and reaches back into Modules&nbsp;1&ndash;2:</p>
+    <ul class="obj-list">
+      <li><strong>Wire sensors &amp; actuators to GPIO</strong> The hardware list and wiring diagram connect an IR array, camera and L298N to specific BCM pins, with the common-ground / no-back-feed safety rules (S9, S10).</li>
+      <li><strong>Program motor control in Python</strong> <code>drive.py</code> sets direction pins and PWM duty through an H-bridge, including the deadband mapping (S10).</li>
+      <li><strong>Apply feedback control</strong> A complete discrete PID with anti-windup reduces a measured error toward a setpoint of zero (S5).</li>
+      <li><strong>Build a reactive autonomous behaviour</strong> The follow/search/stop state machine is reactive navigation with just enough memory to escape the "line lost" trap (S12).</li>
+      <li><strong>Test, tune &amp; document</strong> The PID tuning table is exactly the kind of run-by-run evidence the 20% report component rewards (S13, S14).</li>
+      <li><strong>Reduce perception to one signal</strong> Both IR and OpenCV sensing collapse a rich input into a single line-position error &mdash; the perception&rarr;control pattern (S11).</li>
+    </ul>
+  </section>
+
+  <!-- ===================== 08 EXTENSIONS ===================== -->
+  <section class="proj-section" id="extensions">
+    <span class="section-eyebrow">08 &middot; Going further</span>
+    <h2>Extensions</h2>
+    <p>Once the line-follower is solid, every harder behaviour is a variation on the same loop:</p>
+    <div class="ext-grid">
+      <div class="ext"><h4>Obstacle avoidance</h4><p>Add the HC-SR04 to the loop: if <code>distance &lt; 20 cm</code>, override the PID with a "back up and turn" escape before resuming <code>FOLLOW</code>. This is the obstacle-avoidance behaviour of the Session&nbsp;12 demo bolted onto the line-follower.</p></div>
+      <div class="ext"><h4>Pure-vision steering</h4><p>Drop the IR array and feed <code>read_line_error_cv()</code> straight into the same PID. Add curvature look-ahead by sampling two ROIs (near + far) to slow earlier for sharp bends &mdash; the Session&nbsp;11 vision-in-the-loop idea.</p></div>
+      <div class="ext"><h4>Pepper / NLP control</h4><p>Wire a Module&nbsp;3 intent classifier to the car: spoken commands ("follow the line", "stop", "search") become state-machine transitions, turning the NLP pipeline into a voice front-end for the controller.</p></div>
+      <div class="ext"><h4>Move to ROS</h4><p>Re-cast sense / think / act as ROS nodes publishing on <code>/line_error</code> and <code>/cmd_vel</code>. You gain logging, visualization (rqt, rosbag) and a clean path toward deliberative, map-based navigation.</p></div>
+    </div>
+    <div class="link-row">
+      <a class="demo-link" href="./pages/nlp.html">&#9654; Demo: Intent classifier</a>
+      <a class="demo-link" href="./pages/pepper.html">&#9654; Demo: Pepper behaviours</a>
+      <a class="demo-link" href="./pages/autonomous.html">&#9654; Demo: Obstacle avoidance</a>
+    </div>
+  </section>
+
+  <!-- ===================== 09 REFERENCES ===================== -->
+  <section class="proj-section" id="references">
+    <span class="section-eyebrow">09 &middot; References</span>
+    <h2>References</h2>
+    <div class="ref-list">
+      <div class="ref-item">
+        <p class="cite">Diwakar Vaish &middot; Python Robotics Projects &middot; Packt, 2018 &middot; ISBN 9781788832922</p>
+        <p>The course companion text. Raspberry&nbsp;Pi setup, GPIO, motor control via H-bridge, sensor interfacing and reactive autonomy in Python &mdash; the exact stack this project uses. <a href="https://subscription.packtpub.com/book/iot-and-hardware/9781788832922/pref" target="_blank" rel="noopener">Publisher preview &#8599;</a></p>
+      </div>
+      <div class="ref-item">
+        <p class="cite">John J. Craig &middot; Introduction to Robotics: Mechanics and Control &middot; 3rd ed. &middot; Pearson, 2004</p>
+        <p>The compulsory text. Ch.&nbsp;9 (linear control of manipulators) is the theory behind the PID feedback law and stability conditions used here.</p>
+      </div>
+      <div class="ref-item">
+        <p class="cite">RPi.GPIO &middot; Python GPIO library documentation</p>
+        <p>Reference for <code>GPIO.setup</code>, <code>GPIO.PWM</code>, <code>ChangeDutyCycle</code> and <code>GPIO.cleanup</code> as used throughout the code.</p>
+      </div>
+      <div class="ref-item">
+        <p class="cite">OpenCV &middot; picamera2 &middot; library documentation</p>
+        <p>Reference for frame capture, <code>cvtColor</code>, <code>threshold</code> and <code>moments</code> used in the camera line-detection fallback.</p>
+      </div>
+      <div class="ref-item">
+        <p class="cite">Introduction to Robotics Lab (IRL-N3CSAI) &middot; IE University &middot; 2025&ndash;26</p>
+        <p>The official course syllabus this project is grounded in. <a href="./SYLLABUS.pdf" target="_blank" rel="noopener">Open the syllabus (PDF) &#8599;</a> &middot; <a href="./course.html">full course structure</a>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Worked-example project for IE University's <strong>Introduction to Robotics Lab</strong>. &middot; <a href="./index.html">Interactive demos</a> &middot; <a href="./course.html">Course structure</a> &middot; <a href="./SYLLABUS.pdf" target="_blank" rel="noopener">Official syllabus (PDF)</a> &middot; Not affiliated with IE University. All code is illustrative and runs client-side documentation only.</p>
+</footer>
+</body>
+</html>
