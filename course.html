@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Course Structure — Introduction to Robotics Lab</title>
+<meta name="description" content="Full syllabus-driven course structure for IE University's Introduction to Robotics Lab (IRL-N3CSAI): objectives, methodology, assessment, the complete 15-session program by module, a robotics glossary, and an annotated bibliography." />
+<link rel="stylesheet" href="css/main.css" />
+<style>
+/* ===== course.html — page-specific layout, built on top of main.css tokens ===== */
+.course-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+/* Section anchors clear the sticky header */
+section[id], .course-wrap [id] { scroll-margin-top: 90px; }
+
+.page-hero {
+  padding: 3rem 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+.page-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 0.6rem; }
+.page-hero .lede { font-size: 1.15rem; color: var(--text-dim); max-width: 68ch; }
+
+/* In-page sticky sub-nav */
+.toc {
+  position: sticky; top: 64px; z-index: 40;
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  padding: 0.7rem 0; margin-bottom: 1.5rem;
+  background: rgba(10,14,26,0.82); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.toc a {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em;
+  color: var(--text-dim); padding: 0.3rem 0.7rem; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg-elev);
+}
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+
+.course-section { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+.course-section:first-of-type { border-top: none; }
+.section-eyebrow { font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.4rem; }
+.course-section > p { color: var(--text-dim); max-width: 72ch; }
+
+/* Meta grid */
+.meta-grid { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); margin: 1.5rem 0; }
+.meta-grid .meta {
+  padding: 1rem 1.1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+}
+.meta-grid .meta .k { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-mute); display: block; margin-bottom: 0.25rem; }
+.meta-grid .meta .v { color: var(--text); font-weight: 600; }
+.meta-grid .meta .v.accent { color: var(--accent); font-family: var(--mono); }
+
+/* Objective list */
+.obj-list { list-style: none; padding: 0; margin: 1.2rem 0; display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); }
+.obj-list li {
+  padding: 1rem 1.1rem 1rem 2.6rem; position: relative;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text-dim); font-size: 0.95rem;
+}
+.obj-list li::before {
+  content: "✓"; position: absolute; left: 1rem; top: 1rem;
+  color: var(--accent); font-weight: 700;
+}
+.obj-list li strong { color: var(--text); display: block; margin-bottom: 0.15rem; }
+
+/* Topic chips */
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; }
+.chip { font-family: var(--mono); font-size: 0.74rem; padding: 0.25rem 0.6rem; border-radius: 20px; background: var(--bg-elev); border: 1px solid var(--border); color: var(--text-dim); }
+
+/* % bars (methodology + assessment) */
+.bars { margin: 1.4rem 0; display: grid; gap: 0.9rem; }
+.bar-row { display: grid; grid-template-columns: 220px 1fr 56px; gap: 0.8rem; align-items: center; }
+.bar-row .bl { color: var(--text-dim); font-size: 0.9rem; }
+.bar-track { height: 14px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 8px 0 0 8px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.bar-fill.alt { background: linear-gradient(90deg, var(--accent-2), var(--accent-3)); }
+.bar-row .pv { font-family: var(--mono); color: var(--accent); text-align: right; font-size: 0.88rem; }
+@media (max-width: 640px){ .bar-row { grid-template-columns: 120px 1fr 44px; } .bar-row .bl { font-size: 0.8rem; } }
+
+/* Component cards (assessment) */
+.comp-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin: 1.5rem 0; }
+.comp { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.3rem; position: relative; overflow: hidden; }
+.comp .pct { font-family: var(--mono); font-size: 2rem; color: var(--accent); line-height: 1; }
+.comp h4 { margin: 0.4rem 0 0.5rem; color: var(--text); font-size: 1.05rem; }
+.comp p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+.comp::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 100% 0%, rgba(124,77,255,0.08), transparent 55%); pointer-events: none; }
+
+/* Module blocks */
+.module-block { margin: 2.2rem 0; }
+.module-block > .mb-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.8rem;
+  padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); margin-bottom: 1.2rem;
+}
+.mb-tag { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: #0a0e1a; background: linear-gradient(135deg, var(--accent), var(--accent-2)); padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; }
+.mb-head h3 { font-size: 1.45rem; margin: 0; }
+.mb-overview { color: var(--text-dim); max-width: 74ch; }
+.outcomes { margin: 1rem 0 1.4rem; padding: 1rem 1.2rem; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; }
+.outcomes strong { color: var(--accent); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; font-family: var(--mono); }
+.outcomes ul { margin: 0.5rem 0 0; padding-left: 1.2rem; color: var(--text-dim); font-size: 0.92rem; }
+.outcomes li { margin: 0.25rem 0; }
+
+/* Session timeline (extends main.css .timeline) */
+.timeline.sessions .tl-item { cursor: default; }
+.timeline.sessions .tl-item:hover { transform: none; border-color: var(--border); }
+.timeline.sessions .tl-item.midterm::before { background: var(--warn); box-shadow: 0 0 0 2px var(--warn); }
+.timeline.sessions .tl-item.comp::before { background: var(--accent-3); box-shadow: 0 0 0 2px var(--accent-3); }
+.sx-no { font-family: var(--mono); color: var(--accent); font-size: 0.8rem; letter-spacing: 0.05em; }
+.sx-obj { color: var(--text-dim); font-style: italic; margin: 0.4rem 0 0.8rem; font-size: 0.95rem; }
+.topic { margin: 0.9rem 0; padding-left: 0.9rem; border-left: 2px solid var(--border); }
+.topic h5 { margin: 0 0 0.25rem; color: var(--text); font-size: 1rem; }
+.topic p { margin: 0; color: var(--text-dim); font-size: 0.92rem; }
+.concept { margin-top: 0.5rem; padding: 0.7rem 0.9rem; background: rgba(124,77,255,0.07); border: 1px solid rgba(124,77,255,0.25); border-radius: 8px; font-size: 0.88rem; color: var(--text-dim); }
+.concept b { color: var(--accent-2); font-family: var(--mono); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.readings { margin: 0.9rem 0 0.2rem; font-size: 0.86rem; color: var(--text-mute); }
+.readings .lbl { font-family: var(--mono); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.08em; color: var(--text-mute); display: block; margin-bottom: 0.2rem; }
+.readings ul { margin: 0; padding-left: 1.1rem; }
+.demo-link {
+  display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.9rem;
+  font-family: var(--mono); font-size: 0.8rem; padding: 0.4rem 0.8rem;
+  border-radius: 6px; border: 1px solid rgba(0,229,255,0.3); background: rgba(0,229,255,0.06); color: var(--accent);
+}
+.demo-link:hover { border-color: var(--accent); background: rgba(0,229,255,0.12); color: var(--accent); }
+
+/* Rules grid */
+.rules-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); margin-top: 1.4rem; }
+.rule { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+.rule h4 { margin: 0 0 0.4rem; color: var(--accent); font-size: 0.95rem; }
+.rule p { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+
+/* Glossary */
+.glossary { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); margin-top: 1.4rem; }
+.term { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem; }
+.term dt { font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+.term dt .pin { font-family: var(--mono); font-size: 0.68rem; color: var(--accent); margin-left: 0.4rem; }
+.term dd { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+
+/* Bibliography */
+.bib-list { display: grid; gap: 1rem; margin-top: 1.4rem; }
+.bib-item { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 10px; padding: 1.2rem 1.3rem; }
+.bib-item .badge { font-family: var(--mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(0,229,255,0.1); color: var(--accent); }
+.bib-item.companion { border-left-color: var(--accent-2); }
+.bib-item.companion .badge { background: rgba(124,77,255,0.12); color: var(--accent-2); }
+.bib-item h4 { margin: 0.6rem 0 0.3rem; color: var(--text); }
+.bib-item .cite { color: var(--text-mute); font-size: 0.85rem; font-family: var(--mono); }
+.bib-item p { color: var(--text-dim); font-size: 0.9rem; margin: 0.6rem 0 0; }
+
+.mod-map { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); margin: 1.4rem 0; }
+.mod-map a { display: block; padding: 0.9rem 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; color: var(--text); }
+.mod-map a:hover { border-color: var(--accent); }
+.mod-map a span { display: block; font-family: var(--mono); font-size: 0.72rem; color: var(--accent); margin-bottom: 0.2rem; }
+.mod-map a small { color: var(--text-mute); font-size: 0.82rem; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="index.html">Demos</a>
+    <a href="#objectives">Objectives</a>
+    <a href="#assessment">Assessment</a>
+    <a href="#program">Program</a>
+    <a href="#glossary">Glossary</a>
+    <a href="SYLLABUS.pdf" target="_blank" rel="noopener">PDF ↗</a>
+  </nav>
+</header>
+
+<main class="course-wrap">
+  <p class="crumb"><a href="index.html">Home</a> · <strong>Course structure</strong></p>
+
+  <section class="page-hero">
+    <p class="eyebrow">IE University · IRL-N3CSAI.OACT.M.A1 · 2025–26</p>
+    <h1>Introduction to Robotics Lab — <em>Course Structure</em></h1>
+    <p class="lede">The complete, syllabus-driven map of the course: what you'll learn, how you'll be assessed, and every one of the 15 live sessions across four modules — from the history of robotics and forward kinematics, through sensors, actuators and PID control, to the Pepper humanoid and a fully autonomous Raspberry Pi car. Each session links to the matching hands-on demo on this site.</p>
+  </section>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#overview">Overview</a>
+    <a href="#objectives">Objectives</a>
+    <a href="#methodology">Methodology</a>
+    <a href="#assessment">Assessment</a>
+    <a href="#program">Program</a>
+    <a href="#glossary">Key concepts</a>
+    <a href="#bibliography">Bibliography</a>
+  </nav>
+
+  <!-- ===================== OVERVIEW ===================== -->
+  <section class="course-section" id="overview">
+    <span class="section-eyebrow">01 · Overview</span>
+    <h2>About this course</h2>
+    <p>The Robotics Lab is composed of <strong>15 hours of practical experiments and laboratory activities</strong>. The course follows a <strong>Project-Based Learning</strong> — "learn by doing" — paradigm, an effective teaching technique for robotics built around real robot projects. It covers fundamental concepts, practical applications, and hands-on projects to equip students with the skills needed to <strong>design, program, and interact with robots</strong>, and to bring real-world situations and real-life problems into the lab. The course combines theoretical knowledge with practical experience, preparing students for advanced courses such as <em>Robotics &amp; Automation</em> in their fourth year.</p>
+
+    <div class="meta-grid">
+      <div class="meta"><span class="k">Code</span><span class="v">IRL-N3CSAI.OACT.M.A1</span></div>
+      <div class="meta"><span class="k">Area</span><span class="v">Computer Science</span></div>
+      <div class="meta"><span class="k">Degree course</span><span class="v">First year</span></div>
+      <div class="meta"><span class="k">Semester</span><span class="v">2nd · 2025–26</span></div>
+      <div class="meta"><span class="k">Credits</span><span class="v accent">3.0 ECTS</span></div>
+      <div class="meta"><span class="k">Sessions</span><span class="v accent">15</span></div>
+      <div class="meta"><span class="k">Modules</span><span class="v accent">4</span></div>
+      <div class="meta"><span class="k">Workload</span><span class="v accent">75 h</span></div>
+      <div class="meta"><span class="k">Language</span><span class="v">English</span></div>
+      <div class="meta"><span class="k">Format</span><span class="v">Live, in-person lab</span></div>
+      <div class="meta"><span class="k">Professor</span><span class="v">Suzan T S Awinat</span></div>
+      <div class="meta"><span class="k">Contact</span><span class="v">suzant@faculty.ie.edu</span></div>
+    </div>
+
+    <div class="callout">
+      <p><strong>Instructor.</strong> Suzan T S Awinat — Adjunct Professor, <em>Women in Robotics &amp; STEM</em>, and PhD candidate in computer engineering. Research areas: pattern recognition, Arabic NLP, genetic programming, evolutionary algorithms, semantics, and robotics. Office: T-05.17, IE Tower; office hours on request (also reachable on Teams).</p>
+    </div>
+
+    <p style="margin-top:1.2rem;">Jump straight to the interactive companion for any module:</p>
+    <div class="mod-map">
+      <a href="index.html#m1"><span>Module 1</span>Foundations<small> History · AI loop · Kinematics</small></a>
+      <a href="index.html#m2"><span>Module 2</span>Components<small> Sensors · Actuators · PID control</small></a>
+      <a href="index.html#m3"><span>Module 3</span>Humanoid<small> Pepper robot · NLP</small></a>
+      <a href="index.html#m4"><span>Module 4</span>Raspberry Pi car<small> Build · Autonomy</small></a>
+    </div>
+  </section>
+
+  <!-- ===================== OBJECTIVES ===================== -->
+  <section class="course-section" id="objectives">
+    <span class="section-eyebrow">02 · Learning objectives</span>
+    <h2>What you'll be able to do</h2>
+    <p>By the end of this course, students will be able to:</p>
+    <ul class="obj-list">
+      <li><strong>Understand the fundamentals</strong> Grasp the fundamental principles of robotics and AI — the sense–think–act loop, kinematics, control, and perception.</li>
+      <li><strong>Design &amp; program robots</strong> Be able to design and program robotic systems, using Python and other languages common in robotics.</li>
+      <li><strong>Work with real robots</strong> Gain practical experience with humanoid robots (Pepper) and autonomous vehicles (the Raspberry Pi car).</li>
+      <li><strong>Reason about ethics</strong> Develop critical-thinking skills regarding the ethical implications of robotics and AI in society.</li>
+      <li><strong>Collaborate with AI &amp; peers</strong> Work effectively with AI tools and human teammates to solve problems and generate innovative solutions — fostering teamwork and leveraging AI to improve group productivity.</li>
+    </ul>
+
+    <h3 style="margin-top:1.8rem;">Key topics covered</h3>
+    <div class="chips">
+      <span class="chip">History &amp; evolution</span>
+      <span class="chip">Robotics &amp; AI integration</span>
+      <span class="chip">Kinematics &amp; motion</span>
+      <span class="chip">Sensors &amp; actuators</span>
+      <span class="chip">Programming for robotics</span>
+      <span class="chip">Humanoid interaction</span>
+      <span class="chip">Autonomous systems</span>
+      <span class="chip">Ethical considerations</span>
+    </div>
+    <h3 style="margin-top:1.4rem;">Hands-on projects</h3>
+    <div class="chips">
+      <span class="chip">Pepper robot interaction</span>
+      <span class="chip">Raspberry Pi autonomous car</span>
+    </div>
+  </section>
+
+  <!-- ===================== METHODOLOGY ===================== -->
+  <section class="course-section" id="methodology">
+    <span class="section-eyebrow">03 · Teaching methodology</span>
+    <h2>How the course is taught</h2>
+    <p>The IE University teaching method is <strong>collaborative, active, and applied</strong>. Students actively participate in the whole process to build their knowledge and sharpen their skills; the professor's main role is to lead and guide students toward the learning objectives through a diverse mix of teaching techniques and learning activities. The activity mix and the time a student is expected to dedicate (total <strong>75 hours</strong>) breaks down as follows:</p>
+    <div class="bars">
+      <div class="bar-row"><span class="bl">Group work</span><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div><span class="pv">40%</span></div>
+      <div class="bar-row"><span class="bl">Lectures</span><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pv">20%</span></div>
+      <div class="bar-row"><span class="bl">Exercises · async · field work</span><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div><span class="pv">20%</span></div>
+      <div class="bar-row"><span class="bl">Individual studying</span><div class="bar-track"><div class="bar-fill" style="width:12%"></div></div><span class="pv">12%</span></div>
+      <div class="bar-row"><span class="bl">Discussions</span><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><span class="pv">8%</span></div>
+    </div>
+    <p style="color:var(--text-mute); font-size:0.85rem;">Estimated time to prepare for and participate in each activity: group work 30 h · lectures 15 h · exercises/field work 15 h · individual studying 9 h · discussions 6 h — <strong>75 h total</strong>.</p>
+
+    <div class="callout">
+      <p><strong>AI policy — critical GenAI use is encouraged.</strong> Generative AI is encouraged in this course to develop an informed, critical perspective on its uses and outputs. But know its limits: minimum-effort prompts give low-quality results, so refine your prompts. Don't take GenAI output at face value — assume it is wrong unless you know the answer or can cross-check it; you are responsible for any errors or omissions. AI is a tool you must <em>acknowledge</em> using — acknowledging it will not impact your grade, but failing to do so violates academic-honesty policies.</p>
+    </div>
+  </section>
+
+  <!-- ===================== ASSESSMENT ===================== -->
+  <section class="course-section" id="assessment">
+    <span class="section-eyebrow">04 · Evaluation criteria</span>
+    <h2>How you'll be assessed</h2>
+    <p>Assessment reflects the balance robotics demands between theoretical understanding, hands-on experimentation, technical communication, and active engagement. The final grade is distributed across four components that together total 100%, designed to support a progressive journey from fundamentals to full system integration and autonomous behavior.</p>
+
+    <div class="bars">
+      <div class="bar-row"><span class="bl">Workgroup experiments</span><div class="bar-track"><div class="bar-fill alt" style="width:50%"></div></div><span class="pv">50%</span></div>
+      <div class="bar-row"><span class="bl">Intermediate tests</span><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><span class="pv">20%</span></div>
+      <div class="bar-row"><span class="bl">Report writing</span><div class="bar-track"><div class="bar-fill alt" style="width:20%"></div></div><span class="pv">20%</span></div>
+      <div class="bar-row"><span class="bl">Class participation</span><div class="bar-track"><div class="bar-fill alt" style="width:10%"></div></div><span class="pv">10%</span></div>
+    </div>
+
+    <div class="comp-grid">
+      <div class="comp">
+        <span class="pct">50%</span>
+        <h4>Workgroup experiments</h4>
+        <p>Especially in Modules 2, 3 and 4, students collaborate on experiments involving sensors, actuators, control systems, humanoid interaction, and the Raspberry Pi car. Evaluates teamwork, applied problem-solving, and the ability to translate theory into functioning robotic systems.</p>
+      </div>
+      <div class="comp">
+        <span class="pct">20%</span>
+        <h4>Intermediate tests</h4>
+        <p>Periodic assessments (including the Session 8 midterm) measure comprehension of key concepts from Modules 1–3 — kinematics, control theory, and human–robot interaction — ensuring a solid theoretical foundation before the final project.</p>
+      </div>
+      <div class="comp">
+        <span class="pct">20%</span>
+        <h4>Report writing</h4>
+        <p>Documentation of experimental work and project development, particularly during the Raspberry Pi car build and autonomous-navigation phases. Evaluates clarity, structure, and the ability to communicate technical processes and results.</p>
+      </div>
+      <div class="comp">
+        <span class="pct">10%</span>
+        <h4>Class participation</h4>
+        <p>Robotics is inherently interactive. Participation in lectures, discussions, and labs is essential for foundational topics such as kinematics, AI basics, and NLP. Rewards consistent engagement, curiosity, and contribution.</p>
+      </div>
+    </div>
+
+    <div class="rules-grid">
+      <div class="rule">
+        <h4>Participation rating</h4>
+        <p>Based on two aspects — presence and contributions to class discussions. Contributions are judged on <strong>quality, not quantity</strong>: frequent participants don't automatically rate higher. Start contributing from the beginning of the course.</p>
+      </div>
+      <div class="rule">
+        <h4>Individual &amp; workgroup labs</h4>
+        <p>You'll complete several labs individually or in groups and present results in multimedia form — a chance to reflect on class learning and apply it to practical problems. Full lab details are provided at the start of the course.</p>
+      </div>
+      <div class="rule">
+        <h4>Re-sit / re-take policy</h4>
+        <p>A re-sit / re-take policy applies as per IE University regulations. Check the University's official policy; the Program Director may provide further indications.</p>
+      </div>
+      <div class="rule">
+        <h4>Attendance, conduct &amp; ethics</h4>
+        <p>Sessions are live and in-person; consult the University's Attendance Policy, Code of Conduct, and Ethics Code. The Program Director may provide further indications.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PROGRAM ===================== -->
+  <section class="course-section" id="program">
+    <span class="section-eyebrow">05 · Program</span>
+    <h2>The full program — 15 sessions, 4 modules</h2>
+    <p>All sessions are <strong>live and in-person</strong>. Each session below lists its objective, the topics it covers with short explanations, the core robotics concept where the material is technical, a key idea to take away, suggested readings, and a link to the matching interactive demo on this site.</p>
+
+    <!-- ===== MODULE 1 ===== -->
+    <div class="module-block" id="module-1">
+      <div class="mb-head"><span class="mb-tag">Module 1 / 4</span><h3>Foundations of Robotics</h3></div>
+      <p class="mb-overview">The conceptual bedrock of the course: where robots came from, what makes a machine a <em>robot</em> rather than mere automation (the AI sense–think–act loop), and the mathematics of motion that lets us command an arm to reach a point in space.</p>
+      <div class="outcomes">
+        <strong>Module learning outcomes</strong>
+        <ul>
+          <li>Place modern robotics in its historical and technological context, and classify robots by type and application.</li>
+          <li>Explain how AI and machine learning turn sensing and actuation into intelligent behavior.</li>
+          <li>Compute forward and inverse kinematics for a simple manipulator and reason about degrees of freedom.</li>
+        </ul>
+      </div>
+
+      <div class="timeline sessions">
+        <!-- Session 1 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 1 · Live in-person</span>
+          <h3>Introduction to Robotics</h3>
+          <p class="sx-obj">Objective: orient students in the field, set expectations, and introduce the semester-long projects.</p>
+          <div class="topic"><h5>History and evolution of robotics</h5><p>From early mechanical automata through industrial arms to today's intelligent, learning systems — how the definition of "robot" has shifted over time.</p></div>
+          <div class="topic"><h5>Types of robots and their applications</h5><p>Manipulators, mobile robots, humanoids, and autonomous vehicles, mapped to real-world domains: manufacturing, healthcare, service, exploration, and research.</p></div>
+          <div class="topic"><h5>Course overview and project introduction</h5><p>The four modules, the assessment scheme, and the two hands-on builds (Pepper interaction and the Raspberry Pi car) that the semester drives toward.</p></div>
+          <div class="concept"><b>Concept · what is a robot?</b> A robot is a programmable machine that <em>senses</em> its environment, <em>processes</em> that information to make decisions, and <em>acts</em> on the world through actuators — the sense→think→act loop that distinguishes a robot from fixed automation.</div>
+          <div class="callout"><p><strong>Key idea.</strong> "Robot" is a moving target: each generation of technology redraws the line between automation and autonomy.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Craig, <em>Introduction to Robotics</em> — Ch. 1 (Introduction).</li></ul></div>
+          <a class="demo-link" href="pages/history.html">▶ Demo: History timeline</a>
+          <a class="demo-link" href="pages/ai.html">▶ Demo: Sense→Think→Act</a>
+        </div>
+
+        <!-- Session 2 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 2 · Live in-person</span>
+          <h3>Basics of Robotics and AI</h3>
+          <p class="sx-obj">Objective: understand the fundamental vocabulary of robotics and where AI/ML fit into a robotic system.</p>
+          <div class="topic"><h5>Fundamental concepts in robotics</h5><p>Links, joints, end-effectors, the workspace, degrees of freedom, and the perception–planning–control pipeline that ties them together.</p></div>
+          <div class="topic"><h5>Basics of AI and machine learning in robotics</h5><p>How perception (e.g. computer vision), decision-making (planning, policies), and learning from data enhance a robot's capabilities beyond hard-coded rules.</p></div>
+          <div class="concept"><b>Concept · the sense–think–act loop</b> Perception converts sensor data into a model of the world; cognition/planning chooses an action; control executes it through actuators — then the loop repeats. AI improves each stage: better perception, smarter planning, adaptive control.</div>
+          <div class="callout"><p><strong>Key idea.</strong> AI doesn't replace the loop — it makes each stage of <em>sense → think → act</em> more capable and more general.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Craig, <em>Introduction to Robotics</em> — Ch. 1 (terminology &amp; spatial descriptions).</li></ul></div>
+          <a class="demo-link" href="pages/ai.html">▶ Demo: Robotics &amp; AI loop</a>
+        </div>
+
+        <!-- Session 3 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 3 · Live in-person</span>
+          <h3>Robot Kinematics</h3>
+          <p class="sx-obj">Objective: master the geometry of robot motion — predicting where the hand goes, and computing the joint angles to reach a target.</p>
+          <div class="topic"><h5>Forward and inverse kinematics</h5><p>Forward kinematics maps joint angles → end-effector pose (a direct trigonometric computation). Inverse kinematics maps a desired pose → joint angles, and can have zero, one, or multiple solutions.</p></div>
+          <div class="topic"><h5>Degrees of freedom and robot motion</h5><p>DOF is the number of independent parameters that define a robot's configuration; matching DOF to the task's dimensionality determines what poses are reachable.</p></div>
+          <div class="concept"><b>Concept · forward vs. inverse kinematics</b> For a 2-link planar arm: <code>x = L₁cosθ₁ + L₂cos(θ₁+θ₂)</code>, <code>y = L₁sinθ₁ + L₂sin(θ₁+θ₂)</code> (FK). The IK solution uses the law of cosines and <code>atan2</code>, with a ± branch giving "elbow-up" and "elbow-down" configurations. A target is unreachable when its distance exceeds <code>L₁+L₂</code> or is less than <code>|L₁−L₂|</code>.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Forward kinematics is one fixed answer; inverse kinematics is a search for a solution that may not exist — or may have several.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Craig, <em>Introduction to Robotics</em> — Ch. 3 (Manipulator kinematics) &amp; Ch. 4 (Inverse manipulator kinematics).</li></ul></div>
+          <a class="demo-link" href="pages/kinematics.html">▶ Demo: 2-link arm FK/IK</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODULE 2 ===== -->
+    <div class="module-block" id="module-2">
+      <div class="mb-head"><span class="mb-tag">Module 2 / 4</span><h3>Robotics Components</h3></div>
+      <p class="mb-overview">The physical building blocks: the <em>senses</em> (sensors) that let a robot perceive the world, the <em>muscles</em> (actuators) that let it move, and the <em>controller</em> that closes the loop between them to produce stable, accurate motion.</p>
+      <div class="outcomes">
+        <strong>Module learning outcomes</strong>
+        <ul>
+          <li>Select appropriate sensors and actuators for a given perception or motion task.</li>
+          <li>Explain how a feedback control loop reduces error toward a setpoint.</li>
+          <li>Tune a PID controller and reason about overshoot, oscillation, and steady-state error.</li>
+        </ul>
+      </div>
+
+      <div class="timeline sessions">
+        <!-- Session 4 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 4 · Live in-person</span>
+          <h3>Sensors and Actuators</h3>
+          <p class="sx-obj">Objective: understand the components that let robots perceive their environment and act upon it.</p>
+          <div class="topic"><h5>Types of sensors and their roles</h5><p>Ultrasonic and IR distance sensors, line followers, rotary encoders, IMUs, and cameras — what each measures, its range, and its failure modes.</p></div>
+          <div class="topic"><h5>Actuators in robotics</h5><p>DC motors, servos, and stepper motors — how each converts electrical energy into controlled motion, and where each is the right choice.</p></div>
+          <div class="concept"><b>Concept · sensors &amp; transduction</b> A sensor is a transducer that converts a physical quantity (distance, light, rotation, acceleration) into an electrical signal the controller can read. An ultrasonic sensor, for example, times an echo: <code>distance = (speed_of_sound × echo_time) / 2</code>. An encoder counts pulses to measure shaft rotation.</div>
+          <div class="callout"><p><strong>Key idea.</strong> A robot is only as good as what it can measure — every action ultimately rests on a sensor reading.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish, <em>Python Robotics Projects</em> — sensor &amp; actuator interfacing chapters.</li><li>Craig — Ch. 5–6 (Jacobians/velocities) for motion context.</li></ul></div>
+          <a class="demo-link" href="pages/sensors.html">▶ Demo: Sensor simulators</a>
+          <a class="demo-link" href="pages/actuators.html">▶ Demo: Actuators &amp; gearboxes</a>
+        </div>
+
+        <!-- Session 5 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 5 · Live in-person</span>
+          <h3>Control Systems in Robotics</h3>
+          <p class="sx-obj">Objective: learn how feedback control turns noisy sensors and imperfect actuators into precise, stable motion.</p>
+          <div class="topic"><h5>Introduction to control systems</h5><p>Open-loop vs. closed-loop control, the notions of setpoint, error, and feedback, and why feedback is essential when the world is uncertain.</p></div>
+          <div class="topic"><h5>Robot drive systems: drives, motors, and gearboxes</h5><p>How motors and gearboxes trade torque against speed, and how the choice of drive shapes a robot's acceleration, top speed, and load capacity.</p></div>
+          <div class="concept"><b>Concept · PID control</b> A PID controller computes a correction from the error <code>e(t)</code> between setpoint and measurement: <code>u = Kp·e + Ki·∫e dt + Kd·de/dt</code>. The <em>proportional</em> term reacts to current error, the <em>integral</em> term removes steady-state offset, and the <em>derivative</em> term damps overshoot. A gearbox multiplies torque by its ratio <code>N</code> while dividing speed by <code>N</code>.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Control is about closing the loop: measure the error, act to shrink it, and repeat — fast enough that the system stays stable.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Craig, <em>Introduction to Robotics</em> — Ch. 9 (Linear control of manipulators).</li></ul></div>
+          <a class="demo-link" href="pages/control.html">▶ Demo: Live PID tuner</a>
+          <a class="demo-link" href="pages/actuators.html">▶ Demo: Drives &amp; gearboxes</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODULE 3 ===== -->
+    <div class="module-block" id="module-3">
+      <div class="mb-head"><span class="mb-tag">Module 3 / 4</span><h3>Humanoid Robots Interaction</h3></div>
+      <p class="mb-overview">Moving from mechanics to interaction: programming the Pepper humanoid to behave expressively, and adding a language layer so the robot can understand human speech and respond with appropriate actions.</p>
+      <div class="outcomes">
+        <strong>Module learning outcomes</strong>
+        <ul>
+          <li>Describe Pepper's hardware and software stack and build simple behaviors in Choregraphe.</li>
+          <li>Explain the NLP pipeline that turns an utterance into a robot intent and action.</li>
+          <li>Design conversational, interactive behaviors for a humanoid robot.</li>
+        </ul>
+      </div>
+
+      <div class="timeline sessions">
+        <!-- Session 6 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 6 · Live in-person</span>
+          <h3>Introduction to Pepper Robot</h3>
+          <p class="sx-obj">Objective: get to know the Pepper platform and create your first behaviors visually.</p>
+          <div class="topic"><h5>Overview of Pepper robot's hardware and software</h5><p>Pepper's sensors, microphones, cameras, touchscreen and many degrees of freedom, plus the NAOqi software framework that drives them.</p></div>
+          <div class="topic"><h5>Basic programming using Choregraphe</h5><p>Building behaviors by wiring together visual boxes — speech, gestures, animations — into a flow, without writing code line-by-line.</p></div>
+          <div class="concept"><b>Concept · degrees of freedom in a humanoid</b> Pepper has on the order of ~17–20 DOF distributed across head, arms, hands and base — far more than the 2-DOF arm of Module 1. Each DOF is an independently actuated joint, and coordinating them is what makes humanoid motion expressive but hard to control.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Choregraphe's visual "boxes" are the humanoid equivalent of the kinematics and control you learned earlier — abstracted into reusable behavior blocks.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>SoftBank Robotics — NAOqi / Choregraphe documentation (provided in class).</li></ul></div>
+          <a class="demo-link" href="pages/pepper.html">▶ Demo: Pepper behavior avatar</a>
+        </div>
+
+        <!-- Session 7 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 7 · Live in-person</span>
+          <h3>Natural Language Processing (NLP) for Robots</h3>
+          <p class="sx-obj">Objective: give the robot language — turning what a human says into something the robot can act on.</p>
+          <div class="topic"><h5>Implementing NLP for human–robot interaction</h5><p>Tokenizing an utterance, classifying it into an <em>intent</em>, extracting entities, and mapping the result to a concrete robot action.</p></div>
+          <div class="topic"><h5>Designing conversational behaviors for Pepper using NLP</h5><p>Combining intent recognition with Choregraphe behaviors so Pepper can hold a simple, responsive conversation.</p></div>
+          <div class="concept"><b>Concept · the NLP pipeline</b> Text → <em>tokenization</em> (split into words/sub-words) → <em>intent classification</em> (which action class does this belong to?) → <em>entity/slot extraction</em> (the parameters) → <em>dialogue/action mapping</em>. Even a small rule-based or ML classifier can map "wave at me" to a <code>WAVE</code> intent that triggers a behavior.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Language is just another sensor stream — NLP is the perception layer that turns speech into intents the robot can plan around.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Class materials on intent classification &amp; NAOqi dialogue.</li></ul></div>
+          <a class="demo-link" href="pages/nlp.html">▶ Demo: Intent classifier</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODULE 4 ===== -->
+    <div class="module-block" id="module-4">
+      <div class="mb-head"><span class="mb-tag">Module 4 / 4</span><h3>Raspberry Pi Car Project</h3></div>
+      <p class="mb-overview">The capstone: everything from the earlier modules — sensors, actuators, control, and programming — is integrated to build and program a Raspberry Pi car that navigates and avoids obstacles autonomously, culminating in a class competition. Session 8 is the midterm.</p>
+      <div class="outcomes">
+        <strong>Module learning outcomes</strong>
+        <ul>
+          <li>Set up a Raspberry Pi and wire sensors and actuators to its GPIO pins.</li>
+          <li>Program motor control and a reactive obstacle-avoidance behavior in Python.</li>
+          <li>Test, debug, and tune an autonomous vehicle, and document the process in a report.</li>
+        </ul>
+      </div>
+
+      <div class="timeline sessions">
+        <!-- Session 8 -->
+        <div class="tl-item midterm">
+          <span class="sx-no">Session 8 · Live in-person · Assessment</span>
+          <h3>Midterm</h3>
+          <p class="sx-obj">Objective: consolidate and assess understanding of Modules 1–3 before the build phase begins.</p>
+          <div class="topic"><h5>Midterm assessment</h5><p>An intermediate test covering the foundations, components, and humanoid-interaction material: history &amp; AI, kinematics, sensors &amp; actuators, control theory, and NLP for robots.</p></div>
+          <div class="concept"><b>Concept · why a midterm here?</b> It sits exactly at the pivot from theory (Modules 1–3) to the integrated build (Module 4), ensuring the theoretical foundation is solid before students commit to the autonomous-vehicle project. It contributes to the 20% <em>intermediate tests</em> component.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Review across modules, not just the last one — the midterm spans the whole conceptual half of the course.</p></div>
+          <div class="readings"><span class="lbl">Review</span><ul><li>Craig — Ch. 1, 3, 4, 9; plus Pepper/NLP class notes.</li></ul></div>
+        </div>
+
+        <!-- Session 9 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 9 · Live in-person</span>
+          <h3>Building a Raspberry Pi Car — Part 1</h3>
+          <p class="sx-obj">Objective: stand up the Raspberry Pi platform and prepare it for robotics.</p>
+          <div class="topic"><h5>Introduction to Raspberry Pi and its components</h5><p>The board, GPIO header, CPU, memory, and the role of each — and how a single-board computer becomes the brain of a small robot.</p></div>
+          <div class="topic"><h5>Setting up the Raspberry Pi environment</h5><p>Flashing the OS, configuring Python and required libraries, enabling interfaces (GPIO, I²C, camera), and connecting over the network.</p></div>
+          <div class="concept"><b>Concept · GPIO &amp; single-board computers</b> GPIO (General-Purpose Input/Output) pins are software-controllable digital lines: set <em>high</em>/<em>low</em> to drive a motor driver, or read them to sense a button or sensor. Some pins carry power (5 V, 3.3 V) and ground; others are special buses (I²C, SPI, UART) for richer peripherals.</div>
+          <div class="callout"><p><strong>Key idea.</strong> The Pi turns the abstract sense–think–act loop into real wires — every concept now maps onto a physical pin.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish, <em>Python Robotics Projects</em> — Raspberry Pi setup &amp; GPIO chapters.</li></ul></div>
+          <a class="demo-link" href="pages/raspi-car.html">▶ Demo: Interactive GPIO pinout</a>
+        </div>
+
+        <!-- Session 10 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 10 · Live in-person</span>
+          <h3>Building a Raspberry Pi Car — Part 2</h3>
+          <p class="sx-obj">Objective: connect the hardware and make the car move under program control.</p>
+          <div class="topic"><h5>Connecting sensors and actuators to Raspberry Pi</h5><p>Wiring a motor driver, distance sensors and encoders to the GPIO header — and the safety basics of driving motors from a logic board.</p></div>
+          <div class="topic"><h5>Basic programming for car control</h5><p>Writing Python to drive motors forward/back, steer, and read sensors — the building blocks of any autonomous behavior.</p></div>
+          <div class="concept"><b>Concept · PWM motor control</b> Pulse-Width Modulation switches a pin on and off rapidly; the <em>duty cycle</em> (fraction of time high) sets the average voltage and therefore motor speed. A motor driver (H-bridge) lets the Pi's low-current logic pins control direction and speed of a higher-current motor.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Speed control is timing, not voltage — PWM duty cycle is how a digital pin produces an analog-feeling output.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish — motor control &amp; sensor interfacing with Python.</li></ul></div>
+          <a class="demo-link" href="pages/raspi-car.html">▶ Demo: GPIO pinout</a>
+          <a class="demo-link" href="pages/sensors.html">▶ Demo: Sensor simulators</a>
+        </div>
+
+        <!-- Session 11 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 11 · Live in-person</span>
+          <h3>Advanced Programming for Raspberry Pi Car</h3>
+          <p class="sx-obj">Objective: move beyond basic motion to structured, responsive control software.</p>
+          <div class="topic"><h5>Advanced programming for the car</h5><p>Structuring the control software into a clean sense–think–act loop, integrating multiple sensors, applying control (e.g. PID for line-following or speed), and possibly adding simple computer-vision perception.</p></div>
+          <div class="concept"><b>Concept · computer vision &amp; the control loop</b> A camera frame is processed (thresholding, edge/line detection, blob tracking) into a compact signal — e.g. "line offset = +12 px" — which feeds a controller that steers to drive the offset to zero. This is the perception → control pattern at the heart of autonomy.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Good robot code is a loop with clean stages — perception, decision, actuation — that you can test and tune independently.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish — advanced projects; Craig — Ch. 9 (control) for tuning intuition.</li></ul></div>
+          <a class="demo-link" href="pages/control.html">▶ Demo: PID tuner</a>
+        </div>
+
+        <!-- Session 12 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 12 · Live in-person</span>
+          <h3>Autonomous Navigation</h3>
+          <p class="sx-obj">Objective: make the car drive itself — sensing obstacles and choosing a path without human input.</p>
+          <div class="topic"><h5>Autonomous navigation</h5><p>Reactive obstacle avoidance: read distance sensors, decide turn/forward/stop, and act — repeated fast enough to navigate a course. The basis for more advanced mapping and planning.</p></div>
+          <div class="concept"><b>Concept · autonomous navigation</b> Reactive navigation maps sensor readings directly to motor commands (e.g. "obstacle &lt; 20 cm ahead → turn"). Deliberative navigation builds a map and plans a path (e.g. occupancy grids, A* search). Most beginner robots — including this car — start reactive, which is robust and simple.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Autonomy can be simple: a tight reactive loop with good sensors beats a complex planner that's poorly tuned.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish — autonomous behavior chapters.</li></ul></div>
+          <a class="demo-link" href="pages/autonomous.html">▶ Demo: Drive the autonomous car</a>
+        </div>
+
+        <!-- Session 13 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 13 · Live in-person</span>
+          <h3>Testing and Debugging</h3>
+          <p class="sx-obj">Objective: make the autonomous system reliable through systematic testing and tuning.</p>
+          <div class="topic"><h5>Testing and debugging</h5><p>Isolating faults across the stack — wiring, sensor calibration, control gains, and logic — and using logging and incremental testing to harden the car for competition.</p></div>
+          <div class="concept"><b>Concept · debugging a robot</b> Robots fail at the seams between physical and software layers. Debug bottom-up: confirm power and wiring, then each sensor reading, then each actuator, then the control logic — changing one variable at a time and logging everything.</div>
+          <div class="callout"><p><strong>Key idea.</strong> When a robot misbehaves, suspect the physical layer first — most "algorithm bugs" are loose wires or miscalibrated sensors.</p></div>
+          <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish — debugging &amp; troubleshooting notes; report-writing guidance for documentation (20%).</li></ul></div>
+          <a class="demo-link" href="pages/autonomous.html">▶ Demo: Autonomous car</a>
+        </div>
+
+        <!-- Session 14 -->
+        <div class="tl-item">
+          <span class="sx-no">Session 14 · Live in-person</span>
+          <h3>Competition Preparation</h3>
+          <p class="sx-obj">Objective: optimize and rehearse the car for the final competition.</p>
+          <div class="topic"><h5>Competition preparation</h5><p>Final tuning of speed and avoidance behavior, trial runs on the competition course, team strategy, and finishing the project documentation.</p></div>
+          <div class="concept"><b>Concept · tuning for performance</b> Competition is a trade-off: faster speed reduces sensor reaction time, so gains and thresholds must be retuned for the real track. Repeatability matters more than peak speed — a car that finishes reliably beats a fast one that crashes.</div>
+          <div class="callout"><p><strong>Key idea.</strong> Tune on the actual course: lighting, surface, and layout all change how your sensors and controller behave.</p></div>
+          <div class="readings"><span class="lbl">Deliverable</span><ul><li>Project report (contributes to the 20% report-writing component).</li></ul></div>
+          <a class="demo-link" href="pages/autonomous.html">▶ Demo: Practice run</a>
+        </div>
+
+        <!-- Session 15 -->
+        <div class="tl-item comp">
+          <span class="sx-no">Session 15 · Live in-person · Showcase</span>
+          <h3>Competition 🎉</h3>
+          <p class="sx-obj">Objective: put it all together — race the autonomous cars and celebrate the semester's work.</p>
+          <div class="topic"><h5>Competition</h5><p>Teams run their autonomous Raspberry Pi cars on the course. The culmination of the project-based learning journey, drawing on every module from foundations to full system integration.</p></div>
+          <div class="concept"><b>Concept · system integration</b> The competition is the ultimate integration test: kinematics, sensing, actuation, control, programming and autonomy must all work together in real time on real hardware — the whole sense–think–act loop, end to end.</div>
+          <div class="callout"><p><strong>Key idea.</strong> A working robot in front of a crowd is the truest exam — it integrates everything and forgives nothing.</p></div>
+          <a class="demo-link" href="pages/autonomous.html">▶ Demo: Race the car</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== GLOSSARY ===================== -->
+  <section class="course-section" id="glossary">
+    <span class="section-eyebrow">06 · Key concepts</span>
+    <h2>Robotics glossary</h2>
+    <p>A quick reference to the core terms used across the course. Each links conceptually to a session or demo above.</p>
+    <dl class="glossary">
+      <div class="term"><dt>Robot</dt><dd>A programmable machine that senses, processes, and acts on its environment via actuators.</dd></div>
+      <div class="term"><dt>Sense–Think–Act loop <span class="pin">S1–2</span></dt><dd>The core robotics cycle: perceive the world, decide an action, execute it — then repeat.</dd></div>
+      <div class="term"><dt>Degrees of freedom (DOF) <span class="pin">S3</span></dt><dd>The number of independent parameters that define a robot's configuration; e.g. a 2-link arm has 2, Pepper ~17–20.</dd></div>
+      <div class="term"><dt>End-effector</dt><dd>The tool or "hand" at the tip of a manipulator — the part that interacts with the world.</dd></div>
+      <div class="term"><dt>Workspace</dt><dd>The set of all points an end-effector can reach, bounded by link lengths and joint limits.</dd></div>
+      <div class="term"><dt>Forward kinematics (FK) <span class="pin">S3</span></dt><dd>Computing the end-effector pose from known joint angles — a direct, single-valued calculation.</dd></div>
+      <div class="term"><dt>Inverse kinematics (IK) <span class="pin">S3</span></dt><dd>Computing joint angles to reach a desired pose — may have zero, one, or multiple solutions.</dd></div>
+      <div class="term"><dt>Joint / Link</dt><dd>A joint is an actuated connection allowing motion; links are the rigid segments between joints.</dd></div>
+      <div class="term"><dt>Pose</dt><dd>The combined position and orientation of a rigid body (e.g. the end-effector) in space.</dd></div>
+      <div class="term"><dt>Sensor <span class="pin">S4</span></dt><dd>A transducer converting a physical quantity (distance, light, rotation) into a readable signal.</dd></div>
+      <div class="term"><dt>Ultrasonic sensor <span class="pin">S4</span></dt><dd>Measures distance by timing an echo: distance = (speed of sound × echo time) / 2.</dd></div>
+      <div class="term"><dt>Encoder <span class="pin">S4</span></dt><dd>A sensor that counts shaft rotation in pulses, used to measure wheel/joint position and speed.</dd></div>
+      <div class="term"><dt>Actuator <span class="pin">S4</span></dt><dd>A component that converts energy into motion — DC motor, servo, or stepper.</dd></div>
+      <div class="term"><dt>Servo motor <span class="pin">S4</span></dt><dd>A motor with built-in feedback that holds a commanded angle precisely.</dd></div>
+      <div class="term"><dt>Gearbox / Gear ratio <span class="pin">S5</span></dt><dd>Trades speed for torque (or vice-versa) by ratio N: torque ×N, speed ÷N.</dd></div>
+      <div class="term"><dt>Open-loop vs. closed-loop <span class="pin">S5</span></dt><dd>Open-loop acts without feedback; closed-loop measures error and corrects continuously.</dd></div>
+      <div class="term"><dt>Setpoint &amp; error <span class="pin">S5</span></dt><dd>The setpoint is the desired value; error is the difference between it and the measured value.</dd></div>
+      <div class="term"><dt>PID control <span class="pin">S5,11</span></dt><dd>u = Kp·e + Ki·∫e + Kd·de/dt — proportional, integral, derivative correction of error.</dd></div>
+      <div class="term"><dt>Overshoot / Steady-state error <span class="pin">S5</span></dt><dd>Overshoot is exceeding the target before settling; steady-state error is the residual offset Ki removes.</dd></div>
+      <div class="term"><dt>Humanoid robot <span class="pin">S6</span></dt><dd>A robot with a human-like body plan (head, arms, torso) — e.g. Pepper.</dd></div>
+      <div class="term"><dt>Choregraphe <span class="pin">S6</span></dt><dd>SoftBank's visual programming tool for building NAO/Pepper behaviors from boxes.</dd></div>
+      <div class="term"><dt>NAOqi <span class="pin">S6</span></dt><dd>The software framework/API running on NAO and Pepper robots.</dd></div>
+      <div class="term"><dt>NLP <span class="pin">S7</span></dt><dd>Natural Language Processing — turning human language into structured, actionable meaning.</dd></div>
+      <div class="term"><dt>Tokenization <span class="pin">S7</span></dt><dd>Splitting text into words or sub-word units as the first step of an NLP pipeline.</dd></div>
+      <div class="term"><dt>Intent classification <span class="pin">S7</span></dt><dd>Mapping an utterance to one of a set of action categories (intents) the robot understands.</dd></div>
+      <div class="term"><dt>GPIO <span class="pin">S9</span></dt><dd>General-Purpose Input/Output — software-controllable digital pins on the Raspberry Pi.</dd></div>
+      <div class="term"><dt>PWM <span class="pin">S10</span></dt><dd>Pulse-Width Modulation — duty cycle sets the average output, used for motor speed control.</dd></div>
+      <div class="term"><dt>H-bridge / Motor driver <span class="pin">S10</span></dt><dd>A circuit that lets low-current logic pins control direction and speed of a high-current motor.</dd></div>
+      <div class="term"><dt>Computer vision <span class="pin">S11</span></dt><dd>Extracting meaning from camera images — e.g. detecting a line or obstacle to feed a controller.</dd></div>
+      <div class="term"><dt>Autonomous navigation <span class="pin">S12</span></dt><dd>A robot moving and avoiding obstacles without human control — reactive or map-based.</dd></div>
+      <div class="term"><dt>Reactive vs. deliberative <span class="pin">S12</span></dt><dd>Reactive maps sensors → actions directly; deliberative builds a map and plans a path.</dd></div>
+      <div class="term"><dt>System integration <span class="pin">S15</span></dt><dd>Making all subsystems — sensing, control, actuation, software — work together reliably.</dd></div>
+    </dl>
+  </section>
+
+  <!-- ===================== BIBLIOGRAPHY ===================== -->
+  <section class="course-section" id="bibliography">
+    <span class="section-eyebrow">07 · Bibliography</span>
+    <h2>Annotated bibliography</h2>
+    <p>The core references for the course, as listed in the syllabus.</p>
+    <div class="bib-list">
+      <div class="bib-item">
+        <span class="badge">Compulsory</span>
+        <h4>Introduction to Robotics: Mechanics and Control</h4>
+        <p class="cite">John J. Craig · 3rd ed. · Pearson, 2004 · ISBN 9780201543612 (Digital)</p>
+        <p>The course's compulsory text. It pairs real-world practicality with the underlying theory: roughly one-half mechanical-engineering material, one-quarter control theory, and one-quarter computer science. It covers rigid-body transformations, forward and inverse positional kinematics, velocities and Jacobians of linkages, dynamics, linear and non-linear control, force-control methodologies, mechanical design, and robot programming — directly underpinning Modules 1, 2 and parts of 4.</p>
+      </div>
+      <div class="bib-item companion">
+        <span class="badge">Companion</span>
+        <h4>Python Robotics Projects</h4>
+        <p class="cite">Diwakar Vaish · 1st ed. · Packt, 2018 · ISBN 9781788832922 (Digital)</p>
+        <p>The practical companion for the build modules. It teaches the basics of robotics using the Raspberry Pi as hardware and Python as the programming language — the exact stack used in Module 4's car project. <a href="https://subscription.packtpub.com/book/iot-and-hardware/9781788832922/pref" target="_blank" rel="noopener">Publisher preview ↗</a></p>
+      </div>
+    </div>
+    <p style="margin-top:1.6rem; color:var(--text-mute); font-size:0.85rem;">Source: official course syllabus — <a href="SYLLABUS.pdf" target="_blank" rel="noopener">Introduction to Robotics Lab (IRL-N3CSAI), IE University, 2025–26</a>. This page is an interactive companion and is not officially affiliated with IE University.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Syllabus-driven course structure for IE University's <strong>Introduction to Robotics Lab</strong>. · <a href="index.html">Interactive demos</a> · <a href="SYLLABUS.pdf" target="_blank" rel="noopener">Official syllabus (PDF)</a> · Not affiliated with IE University.</p>
+</footer>
+</body>
+</html>
