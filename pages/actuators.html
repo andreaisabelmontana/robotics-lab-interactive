@@ -133,6 +133,33 @@
     </div>
   </section>
 
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2>Three motor types — which to pick</h2>
+    <div class="grid">
+      <div>
+        <h3 style="color: var(--accent)">DC motor</h3>
+        <p style="color: var(--text-dim)">Spins continuously; speed ∝ voltage, set via PWM duty. Cheap and fast but has <em>no</em> position sense on its own — pair it with an encoder to know where it is. This is what drives your Pi car's wheels.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-2)">Servo</h3>
+        <p style="color: var(--text-dim)">A DC motor + gearbox + potentiometer + controller in one box. You command an <em>absolute angle</em> (0–180°) with a PWM pulse width; it holds that angle under load. Great for sweeping the ultrasonic sensor.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-3)">Stepper</h3>
+        <p style="color: var(--text-dim)">Moves in fixed <em>steps</em> by energising coils in sequence — open-loop yet precise. A common 200-step motor turns <code>360 / 200 = 1.8°</code> per step (0.9° in half-step mode). Used in 3D printers and CNC where exact, repeatable position matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2>PWM duty cycle → effective voltage</h2>
+    <p>A DC motor can't easily take a variable voltage, so the driver switches the full supply on and off quickly. The motor's inertia averages the pulses, so the <em>effective</em> voltage is just <code>duty × V<sub>supply</sub></code>. On a <strong>6 V</strong> pack:</p>
+    <pre>duty = 25%  →  Veff = 0.25 · 6 = 1.50 V   (crawl)
+duty = 50%  →  Veff = 0.50 · 6 = 3.00 V   (half speed)
+duty = 75%  →  Veff = 0.75 · 6 = 4.50 V   (most of full speed)</pre>
+    <p style="color: var(--text-dim)">Drag the <strong>Duty cycle</strong> slider on the DC motor above and the "Effective voltage" readout tracks exactly this calculation.</p>
+  </section>
+
   <div class="callout">
     <p><strong>How they combine in the Pi car:</strong> two DC gear motors (one per side, differential drive) controlled by an L298N H-bridge. The Pi sends two GPIO signals per motor (forward/reverse) plus one PWM (speed). A single servo, optionally, can sweep an ultrasonic sensor side-to-side to scan for obstacles.</p>
   </div>

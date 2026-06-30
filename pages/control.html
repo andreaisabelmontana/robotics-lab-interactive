@@ -113,6 +113,49 @@
 e(t) = setpoint − position</pre>
   </section>
 
+  <section class="panel" style="margin-top: 2rem">
+    <h2>A worked PID step</h2>
+    <p>Take <code>Kp = 2</code>, <code>Ki = 0.5</code>, <code>Kd = 1</code>, sampled every <code>dt = 0.5 s</code>. The error shrinks each step: <code>e = 4, 3, 2</code>. Watch how each term behaves as the cart closes in.</p>
+    <pre>k=0  e = 4
+     integral = 0 + 4·0.5 = 2.0     deriv = (4 − 0)/0.5 = +8.0
+     P = 2·4   = 8.00     I = 0.5·2.0 = 1.00     D = 1·(+8.0) = +8.00
+     u = P + I + D = 8.00 + 1.00 + 8.00 = <strong>17.00</strong>
+
+k=1  e = 3
+     integral = 2.0 + 3·0.5 = 3.5   deriv = (3 − 4)/0.5 = −2.0
+     P = 2·3   = 6.00     I = 0.5·3.5 = 1.75     D = 1·(−2.0) = −2.00
+     u = 6.00 + 1.75 − 2.00 = <strong>5.75</strong>
+
+k=2  e = 2
+     integral = 3.5 + 2·0.5 = 4.5   deriv = (2 − 3)/0.5 = −2.0
+     P = 2·2   = 4.00     I = 0.5·4.5 = 2.25     D = 1·(−2.0) = −2.00
+     u = 4.00 + 2.25 − 2.00 = <strong>4.25</strong></pre>
+    <p style="color: var(--text-dim)">Notice the pattern: <strong>P</strong> falls as the error shrinks; <strong>I</strong> keeps growing because it accumulates every past error; and <strong>D</strong> flips negative once the error starts <em>decreasing</em>, acting as a brake against overshoot. The live sim above runs exactly this loop ~60 times a second.</p>
+  </section>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>Open loop vs. closed loop</h2>
+    <div class="grid">
+      <div>
+        <h3 style="color: var(--accent-3)">Open loop</h3>
+        <p style="color: var(--text-dim)">Command an action and hope. "Run the motor at 70% for 2 seconds." No sensor feedback, so any disturbance — a ramp, a heavier load, low battery — throws it off. Simple, but it can't correct itself.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent)">Closed loop</h3>
+        <p style="color: var(--text-dim)">Measure the output, compute the error, and feed it back — exactly what PID does. The cart reaches the setpoint despite kicks and friction because every cycle re-checks reality. Click "⚡ Kick the cart" above to see the loop fight back.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>Drives, motors &amp; gearboxes — a torque/speed trade</h2>
+    <p>Control output eventually drives a motor through a gearbox. A gear ratio <code>N:1</code> divides speed by N and multiplies torque by N (minus a few percent friction). Take a motor spinning <strong>300 RPM</strong> at <strong>5 N·cm</strong> through a <strong>48:1</strong> reduction:</p>
+    <pre>output speed  = 300 / 48      = 6.25 RPM
+output torque = 5 · 48        = 240 N·cm   (ideal)
+              = 5 · 48 · 0.92 = <strong>220.8 N·cm</strong>  (at ~92% efficiency)</pre>
+    <p style="color: var(--text-dim)">Power is conserved (ideally): motor side <code>(0.05 N·m)·(31.42 rad/s) = 1.57 W</code> equals output side <code>(2.40 N·m)·(0.654 rad/s) = 1.57 W</code>. The gearbox trades the fast-but-weak motor for the slow-but-strong wheel a Pi car needs.</p>
+  </section>
+
   <div class="callout">
     <p><strong>Tuning hint —</strong> Start with Kp only (set Ki = Kd = 0). Increase Kp until you see oscillation, then back off ~30%. Add Kd to damp the oscillation. Add a little Ki last to eliminate any remaining offset. This is the classic Ziegler-Nichols heuristic.</p>
   </div>

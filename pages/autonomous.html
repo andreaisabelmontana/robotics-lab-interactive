@@ -115,8 +115,29 @@
     <p>This is intentionally simple — a <strong>purely reactive</strong> policy with no memory and no map. It can get stuck in corners (try driving into one in the sim). The course's competition will test exactly this kind of edge case.</p>
   </section>
 
+  <section class="panel" style="margin-top: 2rem;">
+    <h2>Knowing where you are: differential-drive odometry</h2>
+    <p>The reactive policy has no map, but the car can still <em>estimate</em> its own position by counting wheel encoder ticks. With a 20-slot encoder, a wheel radius of 3 cm (circumference 18.85 cm) and a wheelbase <code>b = 15 cm</code>, suppose one cycle records <strong>40 ticks left</strong> and <strong>44 ticks right</strong>, starting from heading 30°:</p>
+    <pre>d_L = (40 / 20)·18.85 = 37.70 cm        d_R = (44 / 20)·18.85 = 41.47 cm
+d_center = (d_L + d_R) / 2 = <strong>39.58 cm</strong>      ← how far the car moved
+Δθ       = (d_R − d_L) / b = (41.47 − 37.70) / 15 = 0.2513 rad = <strong>14.40°</strong>
+
+θ_mid = 30° + Δθ/2 = 37.20°              ← integrate about the mid-heading
+Δx = d_center·cos(θ_mid) = 39.58·cos(37.20°) = <strong>31.53 cm</strong>
+Δy = d_center·sin(θ_mid) = 39.58·sin(37.20°) = <strong>23.93 cm</strong>
+new heading = 30° + 14.40° = 44.40°</pre>
+    <p style="color: var(--text-dim)">The right wheel turned more, so the car curves left and the heading grows. Accumulate (Δx, Δy, Δθ) every cycle and you have <em>dead-reckoning</em> — cheap but it drifts, which is why real robots correct it with other sensors.</p>
+
+    <h3 style="color: var(--accent); margin-top: 1.5rem;">The reactive rule, stated cleanly (a "Bug"-style policy)</h3>
+    <pre>if  d_center &gt; threshold:   drive forward          (path is clear)
+elif d_left  &gt; d_right:    turn toward the left   (more free space)
+else:                      turn toward the right
+if  all three &lt; threshold: back up and turn        (cornered)</pre>
+    <p style="color: var(--text-dim)">This always steers toward the freest sweep direction — enough to wander a maze without a map, though it can loop in symmetric corners.</p>
+  </section>
+
   <div class="callout">
-    <p><strong>Upgrade ideas —</strong> add a small state machine ("if stuck for &gt;2s → back up and turn 180°"), record the trail (the green line) to detect loops, or fuse encoder data to know when you've truly stopped. These are great extensions for the competition.</p>
+    <p><strong>Upgrade ideas —</strong> add a small state machine ("if stuck for &gt;2s → back up and turn 180°"), record the trail (the green line) to detect loops, or fuse the odometry above with the ultrasonic to know when you've truly stopped. These are great extensions for the competition.</p>
   </div>
 </main>
 

@@ -126,8 +126,33 @@ else:       stop / search</pre>
     </div>
   </section>
 
+  <section class="panel" style="margin-bottom: 1rem;">
+    <h2>The math, with real numbers</h2>
+
+    <h3 style="color: var(--accent); margin-top: 1rem;">Ultrasonic: echo time → distance</h3>
+    <p style="color: var(--text-dim)">Sound travels at <code>c = 343 m/s</code>. The pulse goes <em>out and back</em>, so divide the round-trip time by 2. Suppose the HC-SR04 reports an echo of <strong>1166 µs</strong>:</p>
+    <pre>distance = c · t / 2
+         = 343 m/s · 1166×10⁻⁶ s / 2
+         = 0.200 m = <strong>20 cm</strong></pre>
+    <p style="color: var(--text-dim)">Rearranged, that's <code>58.3 µs per cm</code> (the constant <code>2 / 343 / 100</code> in seconds), which is why the snippet above multiplies the raw seconds by <strong>17150</strong> to get centimetres.</p>
+
+    <h3 style="color: var(--accent-2); margin-top: 1.5rem;">Encoder: ticks → angle → distance</h3>
+    <p style="color: var(--text-dim)">A 20-slot disc gives <code>360° / 20 = 18°</code> per tick. After <strong>75 ticks</strong> on a wheel of radius <code>r = 3 cm</code>:</p>
+    <pre>angle    = 75 · 18°       = 1350°  = 3.75 revolutions
+circumf. = 2·π·3          = 18.85 cm
+distance = (75 / 20) · 18.85 = <strong>70.69 cm</strong></pre>
+
+    <h3 style="color: var(--accent-3); margin-top: 1.5rem;">Combining two noisy sensors: the complementary filter</h3>
+    <p style="color: var(--text-dim)">A gyro is smooth but drifts; an accelerometer is noisy but doesn't drift. A complementary filter blends them with one constant <code>α</code> (close to 1) — cheaper than a full Kalman filter and good enough for a tilt estimate:</p>
+    <pre>θ = α·(θ_prev + gyro_rate·dt) + (1−α)·θ_accel</pre>
+    <p style="color: var(--text-dim)">With <code>α = 0.98</code>, <code>θ_prev = 10°</code>, <code>gyro_rate = 4°/s</code>, <code>dt = 0.05 s</code>, and a noisy <code>θ_accel = 12°</code>:</p>
+    <pre>gyro path = 10 + 4·0.05 = 10.20°
+θ = 0.98·10.20 + 0.02·12 = <strong>10.24°</strong></pre>
+    <p style="color: var(--text-dim)">The result leans 98% on the trusted gyro integration but lets the accelerometer slowly pull out long-term drift.</p>
+  </section>
+
   <div class="callout">
-    <p><strong>Sensor fusion preview —</strong> Real robots combine multiple sensors because each one is noisy or limited. Your Pi car will use the <em>ultrasonic</em> to detect obstacles, but it could add <em>IR</em> to follow a line and <em>encoders</em> to know how far it has traveled. A Kalman filter combines all three into one clean estimate of the robot's state.</p>
+    <p><strong>Sensor fusion preview —</strong> Real robots combine multiple sensors because each one is noisy or limited. Your Pi car will use the <em>ultrasonic</em> to detect obstacles, but it could add <em>IR</em> to follow a line and <em>encoders</em> to know how far it has traveled. The complementary filter above is the simplest fusion; a Kalman filter generalises the same idea to combine all three into one clean estimate of the robot's state.</p>
   </div>
 </main>
 

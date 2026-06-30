@@ -106,6 +106,25 @@ cos(θ₂) = (r² − L₁² − L₂²) / (2·L₁·L₂)
       <p><strong>Unreachable targets:</strong> if r &gt; L₁ + L₂ (too far) or r &lt; |L₁ − L₂| (too close), there's no real solution — <code>cos(θ₂)</code> would be outside [−1, 1]. Try dragging the hand far outside the workspace and watch the status flip to <em>UNREACHABLE</em>.</p>
     </div>
 
+    <h3 style="margin-top: 1.5rem; color: var(--accent)">Worked example — FK then IK (a round trip)</h3>
+    <p>Take L₁ = 120, L₂ = 100, and set θ₁ = 30°, θ₂ = 60°. <strong>Forward</strong> kinematics gives the hand position directly:</p>
+    <pre>x = 120·cos(30°) + 100·cos(30°+60°)
+  = 120·(0.866) + 100·cos(90°)
+  = 103.92 + 0      = <strong>103.92</strong>
+y = 120·sin(30°) + 100·sin(90°)
+  = 120·(0.5)   + 100·(1)
+  = 60 + 100        = <strong>160.00</strong>     → hand at (103.92, 160.00)</pre>
+    <p>Now feed that point back through <strong>inverse</strong> kinematics with the law of cosines and confirm we recover the same angles:</p>
+    <pre>r² = x² + y² = 103.92² + 160² = 36 400      (r ≈ 190.79, inside [20, 220])
+cos(θ₂) = (r² − L₁² − L₂²) / (2·L₁·L₂)
+        = (36 400 − 14 400 − 10 000) / (2·120·100)
+        = 12 000 / 24 000 = <strong>0.5</strong>
+θ₂ = acos(0.5) = <strong>60°</strong>
+θ₁ = atan2(160, 103.92) − atan2(100·sin60°, 120 + 100·cos60°)
+   = 57.00° − atan2(86.60, 170.00)
+   = 57.00° − 27.00° = <strong>30°</strong></pre>
+    <p>The IK returns exactly θ₁ = 30°, θ₂ = 60° — the inputs we started from. The intermediate <code>cos(θ₂) = 0.5</code> is the key step; the ± on <code>acos</code> is what produces the elbow-up / elbow-down pair.</p>
+
     <h3 style="margin-top: 1.5rem; color: var(--accent-3)">Degrees of Freedom (DOF)</h3>
     <p>This arm has <strong>2 DOF</strong> (two independent joint angles), and it operates in a <strong>2D workspace</strong> (x, y) — a perfect 2-to-2 match. The Pepper robot has <strong>17 DOF</strong>. A typical industrial 6-axis arm has <strong>6 DOF</strong> to fully position and orient a tool in 3D space (3 for position, 3 for orientation).</p>
   </section>
