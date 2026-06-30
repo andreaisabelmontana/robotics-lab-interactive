@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Differential-Drive Odometry — Robotics Lab Interactive</title>
+<link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="../index.html"><span class="logo">◆</span><span class="brand-text">Robotics Lab <em>Interactive</em></span></a>
+  <nav class="site-nav">
+    <a href="../index.html">Home</a>
+    <a href="control.html">PID</a>
+    <a href="autonomous.html">Car</a>
+    <a href="kinematics.html">Kinematics</a>
+  </nav>
+</header>
+
+<main class="page-wrap">
+  <p class="crumb"><a href="../index.html">Home</a> · Module 4 · <strong>Differential-Drive Odometry</strong></p>
+  <header class="page-head">
+    <h1>Where am I? Dead-reckoning live</h1>
+    <p class="sub">Set the left and right wheel speeds and watch the car integrate its own pose from nothing but those two numbers — the same encoder-tick math the real Pi car uses. Equal speeds drive straight; a difference curves; equal-and-opposite spins in place.</p>
+  </header>
+
+  <div class="lab split">
+    <div>
+      <div class="viz" style="min-height: 480px; padding: 0;">
+        <canvas id="odoCanvas" width="700" height="480" style="border-radius: 12px;"></canvas>
+      </div>
+      <p style="text-align: center; color: var(--text-mute); font-size: 0.85rem; margin-top: 0.6rem;">
+        The green line is the integrated trajectory. The grid is in centimetres.
+      </p>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h3>Wheel speeds</h3>
+        <div class="control">
+          <label>Left v<sub>L</sub></label>
+          <input type="range" id="vL" min="-30" max="30" step="0.5" value="14">
+          <span class="val" id="vLVal">14.0</span>
+        </div>
+        <div class="control">
+          <label>Right v<sub>R</sub></label>
+          <input type="range" id="vR" min="-30" max="30" step="0.5" value="20">
+          <span class="val" id="vRVal">20.0</span>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.6rem;">cm/s at the wheel contact point. Drag both the same way to translate, opposite ways to rotate.</p>
+        <div class="btn-row">
+          <button class="btn-sm" data-preset="straight">Straight</button>
+          <button class="btn-sm active" data-preset="curve">Gentle curve</button>
+          <button class="btn-sm" data-preset="spin">Spin in place</button>
+          <button class="btn-sm" data-preset="pivot">Pivot (1 wheel)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Robot geometry</h3>
+        <div class="control">
+          <label>Wheelbase b</label>
+          <input type="range" id="base" min="8" max="30" step="0.5" value="15">
+          <span class="val" id="baseVal">15.0</span>
+        </div>
+        <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 0.6rem;">Distance between the two drive wheels (cm). A wider base turns more slowly for the same speed difference.</p>
+        <div class="btn-row">
+          <button class="btn-sm" id="pauseBtn">⏸ Pause</button>
+          <button class="btn-sm" id="resetBtn">Reset pose</button>
+          <button class="btn-sm" id="clearBtn">Clear trail</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Estimated pose (dead-reckoning)</h3>
+        <div class="readouts">
+          <div><span class="k">x</span><span class="v" id="xVal">—</span></div>
+          <div><span class="k">y</span><span class="v" id="yVal">—</span></div>
+          <div><span class="k">heading θ</span><span class="v" id="thVal">—</span></div>
+          <div><span class="k">linear v = (v<sub>R</sub>+v<sub>L</sub>)/2</span><span class="v" id="vVal">—</span></div>
+          <div><span class="k">angular ω = (v<sub>R</sub>−v<sub>L</sub>)/b</span><span class="v" id="wVal">—</span></div>
+          <div><span class="k">turn radius R = v/ω</span><span class="v" id="rVal">—</span></div>
+          <div><span class="k">path length</span><span class="v" id="pathVal">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>The kinematics, exactly</h2>
+    <p>A differential-drive robot has two independently driven wheels separated by a wheelbase <code>b</code>. From the two wheel speeds you recover the robot's <strong>body twist</strong> — how fast it moves forward and how fast it rotates:</p>
+    <pre>v = (v_R + v_L) / 2          ← linear speed of the body centre
+ω = (v_R − v_L) / b          ← angular speed (rad/s)</pre>
+    <p>Then you integrate that twist forward over a time step <code>dt</code> to update the pose <code>(x, y, θ)</code>. When the robot turns (<code>ω ≠ 0</code>) it traces a perfect circular <strong>arc</strong> of radius <code>R = v/ω</code>, and the exact closed-form update is:</p>
+    <pre>R = v / ω
+x ← x + R·( sin(θ + ω·dt) − sin θ )
+y ← y − R·( cos(θ + ω·dt) − cos θ )
+θ ← θ + ω·dt</pre>
+    <p>When <code>ω ≈ 0</code> the arc radius blows up, so we fall back to the straight-line form (the limit of the equations above):</p>
+    <pre>x ← x + v·cos(θ)·dt
+y ← y + v·sin(θ)·dt</pre>
+    <p>This is the <em>same</em> math the sim above runs ~60 times a second. The three special cases you can dial in with the presets:</p>
+    <div class="grid">
+      <div>
+        <h3 style="color: var(--accent)">v<sub>L</sub> = v<sub>R</sub></h3>
+        <p style="color: var(--text-dim)">ω = 0 → drives in a straight line along the current heading. Distance covered is exactly <code>v·dt</code>.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-2)">v<sub>L</sub> = −v<sub>R</sub></h3>
+        <p style="color: var(--text-dim)">v = 0, ω ≠ 0 → spins in place. The body centre never moves; only θ changes.</p>
+      </div>
+      <div>
+        <h3 style="color: var(--accent-3)">one wheel stopped</h3>
+        <p style="color: var(--text-dim)">Say v<sub>L</sub> = 0. The robot pivots about that wheel, tracing an arc of radius exactly <code>R = b/2</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top: 2rem">
+    <h2>A worked step — from encoder ticks to a pose update</h2>
+    <p>On the real car you don't read wheel speeds directly; you count <strong>encoder ticks</strong> and convert. With a 20-slot encoder, a wheel radius of 3 cm (circumference 18.85 cm) and a wheelbase <code>b = 15 cm</code>, suppose one cycle records <strong>40 ticks left</strong> and <strong>44 ticks right</strong>, starting from heading 30°:</p>
+    <pre>d_L = (40 / 20)·18.85 = 37.70 cm        d_R = (44 / 20)·18.85 = 41.47 cm
+d_center = (d_L + d_R) / 2 = <strong>39.58 cm</strong>      ← how far the centre moved
+Δθ       = (d_R − d_L) / b = (41.47 − 37.70) / 15 = 0.2513 rad = <strong>14.40°</strong>
+
+θ_mid = 30° + Δθ/2 = 37.20°              ← integrate about the mid-heading
+Δx = d_center·cos(θ_mid) = 39.58·cos(37.20°) = <strong>31.53 cm</strong>
+Δy = d_center·sin(θ_mid) = 39.58·sin(37.20°) = <strong>23.93 cm</strong>
+new heading = 30° + 14.40° = 44.40°</pre>
+    <p>That midpoint formula is the second-order approximation taught in most courses. The sim above uses the <em>exact</em> arc integral instead, which lands a hair shorter (the chord of the arc, ≈ 31.45 cm / 23.87 cm) but recovers the identical Δθ = 14.40° and new heading 44.40°. For one short step the two agree to fractions of a millimetre.</p>
+
+    <div class="callout">
+      <p><strong>Dead-reckoning drifts.</strong> Every cycle's small error in wheel diameter, tick count, or wheel slip accumulates — there's no feedback to correct it, so the estimated pose slowly diverges from reality. That's why real robots fuse odometry with another sensor (IMU, ultrasonic landmarks, a camera) rather than trusting wheel counts alone. Run the sim long enough and you're trusting exactly this chain of integrations.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p><a href="../index.html">← Back to all modules</a></p>
+</footer>
+
+<script>
+const cv = document.getElementById('odoCanvas');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const EPS = 1e-9;
+const SCALE = 3;                 // pixels per cm
+const ORIGIN = { x: W * 0.5, y: H * 0.5 };
+
+const $ = id => document.getElementById(id);
+
+let pose = { x: 0, y: 0, th: 0 };   // x,y in cm; th in rad (0 = +x, CCW positive)
+let trail = [];                      // {x, y} in cm
+let pathLen = 0;
+let running = true;
+let lastT = performance.now();
+
+// --- the verified core: one exact differential-drive odometry step ---
+// vL, vR in cm/s, b in cm, dt in s. Mutates and returns pose.
+function stepOdometry(p, vL, vR, b, dt) {
+  const v = (vR + vL) / 2;
+  const omega = (vR - vL) / b;
+  if (Math.abs(omega) < EPS) {
+    p.x += v * Math.cos(p.th) * dt;
+    p.y += v * Math.sin(p.th) * dt;
+  } else {
+    const dth = omega * dt;
+    const R = v / omega;
+    p.x += R * (Math.sin(p.th + dth) - Math.sin(p.th));
+    p.y += -R * (Math.cos(p.th + dth) - Math.cos(p.th));
+    p.th += dth;
+  }
+  p.th = Math.atan2(Math.sin(p.th), Math.cos(p.th));
+  return p;
+}
+
+// math (cm) -> screen (px). y flips because canvas y grows downward.
+function toScreen(x, y) {
+  return { px: ORIGIN.x + x * SCALE, py: ORIGIN.y - y * SCALE };
+}
+
+const presets = {
+  straight: [16, 16],
+  curve:    [14, 20],
+  spin:     [-12, 12],
+  pivot:    [0, 18]
+};
+
+function applyPreset(name) {
+  const [l, r] = presets[name];
+  $('vL').value = l; $('vLVal').textContent = l.toFixed(1);
+  $('vR').value = r; $('vRVal').textContent = r.toFixed(1);
+}
+
+document.querySelectorAll('[data-preset]').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('[data-preset]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    applyPreset(b.dataset.preset);
+  });
+});
+
+['vL', 'vR', 'base'].forEach(id => {
+  $(id).addEventListener('input', e => {
+    $(id + 'Val').textContent = (+e.target.value).toFixed(1);
+    // a manual slider tweak deselects the active preset
+    if (id !== 'base') document.querySelectorAll('[data-preset]').forEach(x => x.classList.remove('active'));
+  });
+});
+
+function resetPose() {
+  pose = { x: 0, y: 0, th: 0 };
+  trail = [{ x: 0, y: 0 }];
+  pathLen = 0;
+}
+
+$('resetBtn').addEventListener('click', resetPose);
+$('clearBtn').addEventListener('click', () => { trail = [{ x: pose.x, y: pose.y }]; pathLen = 0; });
+$('pauseBtn').addEventListener('click', () => {
+  running = !running;
+  $('pauseBtn').textContent = running ? '⏸ Pause' : '▶ Resume';
+  lastT = performance.now();
+});
+
+function drawGrid() {
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, W, H);
+  // minor grid every 10 cm
+  ctx.strokeStyle = '#1a2138';
+  ctx.lineWidth = 1;
+  const stepPx = 10 * SCALE;
+  for (let x = ORIGIN.x % stepPx; x < W; x += stepPx) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = ORIGIN.y % stepPx; y < H; y += stepPx) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  // axes through the start pose origin
+  ctx.strokeStyle = '#2a3550';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, ORIGIN.y); ctx.lineTo(W, ORIGIN.y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ORIGIN.x, 0); ctx.lineTo(ORIGIN.x, H); ctx.stroke();
+  ctx.fillStyle = '#6b7595';
+  ctx.font = '11px ui-monospace';
+  ctx.fillText('start (0,0)', ORIGIN.x + 6, ORIGIN.y - 6);
+  ctx.fillText('+x', W - 22, ORIGIN.y - 6);
+  ctx.fillText('+y', ORIGIN.x + 6, 14);
+}
+
+function drawTrail() {
+  if (trail.length < 2) return;
+  ctx.strokeStyle = '#4ade80';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  trail.forEach((p, i) => {
+    const s = toScreen(p.x, p.y);
+    i ? ctx.lineTo(s.px, s.py) : ctx.moveTo(s.px, s.py);
+  });
+  ctx.stroke();
+}
+
+function drawRobot() {
+  const s = toScreen(pose.x, pose.y);
+  // wrap drawing if robot leaves the canvas (keep it visible by clamping marker)
+  ctx.save();
+  ctx.translate(s.px, s.py);
+  ctx.rotate(-pose.th);            // screen y is flipped, so negate
+  // body
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillRect(-16, -11, 32, 22);
+  // heading arrow
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.moveTo(16, 0); ctx.lineTo(8, -7); ctx.lineTo(8, 7); ctx.closePath(); ctx.fill();
+  // two drive wheels (drawn at +/- b/2 along the body y axis)
+  const bHalfPx = (+$('base').value / 2) * SCALE;
+  ctx.fillStyle = '#7c4dff';
+  ctx.fillRect(-7, -bHalfPx - 3, 14, 6);
+  ctx.fillRect(-7, bHalfPx - 3, 14, 6);
+  ctx.restore();
+  // origin dot of the body centre
+  ctx.fillStyle = '#ff4d8d';
+  ctx.beginPath(); ctx.arc(s.px, s.py, 3, 0, Math.PI * 2); ctx.fill();
+}
+
+function update(dt) {
+  const vL = +$('vL').value;
+  const vR = +$('vR').value;
+  const b = +$('base').value;
+
+  const prev = { x: pose.x, y: pose.y };
+  stepOdometry(pose, vL, vR, b, dt);
+
+  // accumulate trail + path length (in cm)
+  const moved = Math.hypot(pose.x - prev.x, pose.y - prev.y);
+  pathLen += moved;
+  if (trail.length === 0 || moved > 0.3) {
+    trail.push({ x: pose.x, y: pose.y });
+    if (trail.length > 4000) trail.shift();
+  }
+
+  // readouts
+  const v = (vR + vL) / 2;
+  const omega = (vR - vL) / b;
+  $('xVal').textContent = pose.x.toFixed(1) + ' cm';
+  $('yVal').textContent = pose.y.toFixed(1) + ' cm';
+  $('thVal').textContent = (pose.th * 180 / Math.PI).toFixed(1) + ' °';
+  $('vVal').textContent = v.toFixed(2) + ' cm/s';
+  $('wVal').textContent = omega.toFixed(3) + ' rad/s';
+  $('rVal').textContent = Math.abs(omega) < EPS ? '∞ (straight)' : (v / omega).toFixed(1) + ' cm';
+  $('pathVal').textContent = (pathLen / 100).toFixed(2) + ' m';
+}
+
+function loop() {
+  const now = performance.now();
+  let dt = (now - lastT) / 1000;
+  lastT = now;
+  if (dt > 0.05) dt = 0.05;        // clamp big gaps (tab switches)
+  if (running) update(dt);
+
+  drawGrid();
+  drawTrail();
+  drawRobot();
+
+  requestAnimationFrame(loop);
+}
+
+resetPose();
+applyPreset('curve');
+loop();
+</script>
+</body>
+</html>

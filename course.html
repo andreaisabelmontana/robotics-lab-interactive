@@ -580,8 +580,10 @@ section[id], .course-wrap [id] { scroll-margin-top: 90px; }
           <div class="concept"><b>Pitfall →</b> Pure reactive controllers can get stuck in <em>local traps</em> — oscillating in a corner or looping in a dead-end — because they have no memory of where they've been. Adding a little state (a timed "back up and turn" escape) fixes most cases without a full map.</div>
           <div class="callout"><p><strong>Key idea.</strong> Autonomy can be simple: a tight reactive loop with good sensors beats a complex planner that's poorly tuned.</p></div>
           <div class="callout"><p><strong>Take away.</strong> Be able to write a reactive obstacle-avoidance policy, contrast it with deliberative planning, and explain how a little state escapes local traps.</p></div>
+          <div class="concept"><b>Concept · knowing where you are</b> A reactive policy needs no map, but the car can still <em>estimate</em> its pose by counting wheel-encoder ticks — <em>odometry</em>, or dead-reckoning. From the two wheel speeds you get the body twist <code>v=(v_R+v_L)/2</code>, <code>ω=(v_R−v_L)/b</code> and integrate it forward each cycle. It's cheap and needs no external sensor, but errors accumulate and the estimate drifts, which is why real robots fuse it with an IMU or landmarks.</div>
           <div class="readings"><span class="lbl">Readings</span><ul><li>Vaish — autonomous behavior chapters: building reactive obstacle-avoidance loops in Python on the Pi car.</li></ul></div>
           <a class="demo-link" href="pages/autonomous.html">▶ Demo: Drive the autonomous car</a>
+          <a class="demo-link" href="pages/odometry.html">▶ Demo: Differential-drive odometry</a>
         </div>
 
         <!-- Session 13 -->

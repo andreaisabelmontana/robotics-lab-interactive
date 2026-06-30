@@ -127,6 +127,7 @@ d_center = (d_L + d_R) / 2 = <strong>39.58 cm</strong>      ← how far the car 
 Δy = d_center·sin(θ_mid) = 39.58·sin(37.20°) = <strong>23.93 cm</strong>
 new heading = 30° + 14.40° = 44.40°</pre>
     <p style="color: var(--text-dim)">The right wheel turned more, so the car curves left and the heading grows. Accumulate (Δx, Δy, Δθ) every cycle and you have <em>dead-reckoning</em> — cheap but it drifts, which is why real robots correct it with other sensors.</p>
+    <p style="margin-top: 0.8rem;"><a href="odometry.html">▶ Try it live: the differential-drive odometry simulator</a> — drive two wheel speeds and watch the pose integrate in real time.</p>
 
     <h3 style="color: var(--accent); margin-top: 1.5rem;">The reactive rule, stated cleanly (a "Bug"-style policy)</h3>
     <pre>if  d_center &gt; threshold:   drive forward          (path is clear)
